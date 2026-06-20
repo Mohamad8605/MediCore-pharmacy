@@ -1,0 +1,208 @@
+import { ShoppingCart, Truck, Trash2, Plus, Minus, ShieldAlert, BadgeCheck } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/lib/cart";
+import { useFormatPrice } from "@/hooks/use-format-price";
+import { SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
+
+export function CartDrawer() {
+  const items = useCart((s) => s.items);
+  const setQty = useCart((s) => s.setQuantity);
+  const remove = useCart((s) => s.remove);
+  const total = useCart((s) => s.total());
+  const count = useCart((s) => s.count());
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const fp = useFormatPrice();
+  const shipping = total < SHIPPING_THRESHOLD ? SHIPPING_FEE : 0;
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const rxItems = items.filter((i) => i.medication.requires_prescription);
+  const otcItems = items.filter((i) => !i.medication.requires_prescription);
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative" aria-label="Open cart">
+          <ShoppingCart className="h-5 w-5" />
+          {mounted && count > 0 && (
+            <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full px-1 text-[10px]">
+              {count}
+            </Badge>
+          )}
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
+        <SheetHeader className="border-b p-6">
+          <SheetTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            Your cart
+          </SheetTitle>
+          <SheetDescription>
+            {count === 0
+              ? "No items in your cart yet."
+              : `${count} item${count === 1 ? "" : "s"} in cart`}
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          {items.length === 0 ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">Your cart is empty.</p>
+          ) : (
+            <div className="space-y-6">
+              <CartGroup
+                label="Prescription"
+                icon={<ShieldAlert className="h-3.5 w-3.5" />}
+                tone="destructive"
+                items={rxItems}
+                onQty={setQty}
+                onRemove={remove}
+                fp={fp}
+              />
+              <CartGroup
+                label="Over the counter"
+                icon={<BadgeCheck className="h-3.5 w-3.5" />}
+                tone="primary"
+                items={otcItems}
+                onQty={setQty}
+                onRemove={remove}
+                fp={fp}
+              />
+            </div>
+          )}
+        </div>
+
+        {items.length > 0 && (
+          <div className="border-t bg-muted/30 p-6">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <Truck className="mr-1 inline h-3.5 w-3.5" />
+              Delivery
+            </p>
+            <p className="mb-4 text-xs text-muted-foreground">
+              {total >= SHIPPING_THRESHOLD
+                ? `Free delivery over €${SHIPPING_THRESHOLD}`
+                : `€${SHIPPING_FEE} delivery · Free over €${SHIPPING_THRESHOLD}`}
+            </p>
+            <div className="space-y-1 text-sm">
+              <Row label="Subtotal" value={fp(total)} />
+              <Row label="Delivery" value={shipping === 0 ? "Free" : fp(shipping)} />
+              <Separator className="my-2" />
+              <Row label="Total (incl. VAT)" value={fp(total + shipping)} bold />
+            </div>
+
+            <Button
+              className="mt-4 w-full rounded-xl"
+              onClick={() => {
+                setOpen(false);
+                navigate({ to: "/checkout" });
+              }}
+            >
+              Checkout
+            </Button>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+  return (
+    <div
+      className={[
+        "flex justify-between",
+        bold ? "text-base font-semibold" : "text-muted-foreground",
+      ].join(" ")}
+    >
+      <span>{label}</span>
+      <span className={bold ? "text-foreground" : ""}>{value}</span>
+    </div>
+  );
+}
+
+function CartGroup({
+  label,
+  icon,
+  tone,
+  items,
+  onQty,
+  onRemove,
+  fp,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  tone: "destructive" | "primary";
+  items: ReturnType<typeof useCart.getState>["items"];
+  onQty: (id: string, qty: number) => void;
+  onRemove: (id: string) => void;
+  fp: (value: number) => string;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <Badge
+        variant={tone === "destructive" ? "destructive" : "secondary"}
+        className={tone === "primary" ? "mb-3 gap-1 bg-primary/10 text-primary" : "mb-3 gap-1"}
+      >
+        {icon}
+        {label}
+      </Badge>
+      <ul className="space-y-3">
+        {items.map((i) => (
+          <li key={i.medication.id} className="rounded-2xl border bg-card p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{i.medication.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {fp(i.medication.price)} · incl. VAT
+                </p>
+              </div>
+              <button
+                onClick={() => onRemove(i.medication.id)}
+                className="text-muted-foreground hover:text-destructive"
+                aria-label="Remove"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-1 rounded-xl border bg-background">
+                <button
+                  className="p-1.5 disabled:opacity-30"
+                  onClick={() => onQty(i.medication.id, i.quantity - 1)}
+                  disabled={i.quantity <= 1}
+                  aria-label="Decrease"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <span className="w-6 text-center text-sm tabular-nums">{i.quantity}</span>
+                <button
+                  className="p-1.5"
+                  onClick={() => onQty(i.medication.id, i.quantity + 1)}
+                  aria-label="Increase"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <p className="text-sm font-semibold">{fp(i.medication.price * i.quantity)}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

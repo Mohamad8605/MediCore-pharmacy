@@ -1,0 +1,49 @@
+import { describe, it, expect, beforeEach } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { useFormatPrice } from "@/hooks/use-format-price";
+import { LanguageProvider } from "@/lib/LanguageContext";
+
+function render(lang?: "de" | "en") {
+  if (lang === "de") {
+    localStorage.setItem("apotheke-lang", "de");
+  }
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <LanguageProvider>{children}</LanguageProvider>
+  );
+  return renderHook(() => useFormatPrice(), { wrapper });
+}
+
+describe("useFormatPrice", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("formats a price in EUR with two decimals", () => {
+    const { result } = render();
+    const formatted = result.current(3.5);
+    expect(formatted).toContain("3");
+    expect(formatted).toContain("50");
+    expect(formatted).toContain("€");
+  });
+
+  it("formats zero correctly", () => {
+    const { result } = render();
+    const formatted = result.current(0);
+    expect(formatted).toContain("0");
+    expect(formatted).toContain("€");
+  });
+
+  it("formats large values", () => {
+    const { result } = render();
+    const formatted = result.current(1234.56);
+    expect(formatted).toContain("€");
+  });
+
+  it("formats in German locale when language is de", () => {
+    const { result } = render("de");
+    const formatted = result.current(1.5);
+    expect(formatted).toContain("1");
+    expect(formatted).toContain("50");
+    expect(formatted).toContain("€");
+  });
+});
