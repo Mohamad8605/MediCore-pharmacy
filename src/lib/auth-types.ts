@@ -13,7 +13,8 @@ export interface AuthFailure {
   logMessage: string;
 }
 
-// Pure fn — no side effects, easy to test
+/** Categorises a Supabase auth error into a typed AuthFailure with a user-friendly message.
+ *  Pure function — no side effects, easy to test in isolation. */
 export function categorizeAuthError(error: AuthError, email?: string): AuthFailure {
   const msg = error.message?.toLowerCase() ?? "";
   const status = (error as { status?: number }).status;

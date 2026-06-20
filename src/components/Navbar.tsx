@@ -67,7 +67,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setLang(lang === "de" ? "en" : "de")}
-            aria-label={lang === "de" ? "Switch to English" : "Switch zur deutschen Sprache"}
+            aria-label={lang === "de" ? "Switch to English" : "Switch to German"}
             className="rounded-xl text-xs font-bold w-9 h-9"
           >
             {lang === "de" ? "EN" : "DE"}

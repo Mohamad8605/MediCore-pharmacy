@@ -14,6 +14,7 @@ if (typeof globalThis.addEventListener === "function") {
   );
 }
 
+/** Returns the most recent global error or unhandled rejection, or undefined if none or expired. */
 export function consumeLastCapturedError(): unknown {
   if (!lastCapturedError) return undefined;
   if (Date.now() - lastCapturedError.at > TTL_MS) {

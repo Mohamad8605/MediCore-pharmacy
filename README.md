@@ -173,7 +173,7 @@ The `SUPABASE_SERVICE_ROLE_KEY` is **not** the database password. To connect via
 | -------------------- | ------------------------ |
 | `npm run dev`        | Start development server |
 | `npm run build`      | Production build         |
-| `npm run test`        | Run 36 unit tests (Vitest) |
+| `npm run test`        | Run 37 unit tests (Vitest) |
 | `npm run test:watch` | Run tests in watch mode  |
 | `npm run preview`    | Preview production build |
 | `npm run lint`       | Run ESLint               |

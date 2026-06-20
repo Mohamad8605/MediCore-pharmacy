@@ -83,7 +83,11 @@ export const loadOrders = createServerFn({ method: "GET" }).handler(async (ctx) 
 
   for (const u of DEMO_USERS) {
     if (!pm[u.id]) {
-      pm[u.id] = { id: u.id, first_name: u.first_name, last_name: u.last_name } as unknown as ProfileRow;
+      pm[u.id] = {
+        id: u.id,
+        first_name: u.first_name,
+        last_name: u.last_name,
+      } as unknown as ProfileRow;
     }
   }
 

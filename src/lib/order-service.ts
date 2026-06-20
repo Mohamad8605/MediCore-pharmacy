@@ -30,10 +30,12 @@ type OrderItemInput = Array<{
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 
+/** Fetches all orders placed by the currently authenticated user. */
 export async function fetchUserOrders() {
   return await (serverFetchUserOrders as unknown as () => Promise<Record<string, unknown>[]>)();
 }
 
+/** Fetches a single order by its ID. Returns null if the order does not exist or does not belong to the user. */
 export async function fetchOrderById(orderId: string) {
   return await (
     serverFetchOrderById as unknown as ServerFn<string, Record<string, unknown> | null>
@@ -42,19 +44,21 @@ export async function fetchOrderById(orderId: string) {
   });
 }
 
+/** Creates a new order record on the server. */
 export async function createOrder(order: OrderInput) {
   return await (serverCreateOrder as unknown as ServerFn<OrderInput, OrderRow>)({
     data: order,
   });
 }
 
+/** Inserts order-item rows for a newly created order. */
 export async function createOrderItems(items: OrderItemInput) {
   return await (serverCreateOrderItems as unknown as ServerFn<OrderItemInput, void>)({
     data: items,
   });
 }
 
-// Converts the file to base64 on the client, then sends it to the server for storage
+/** Converts a prescription file to base64 on the client, then sends it to the server for storage. */
 export async function uploadPrescription(
   file: File,
 ): Promise<{ path: string | null; error?: string }> {
@@ -80,10 +84,12 @@ export async function uploadPrescription(
   });
 }
 
+/** Cancels an order by ID. Returns true if the cancellation was successful. */
 export async function cancelOrder(orderId: string) {
   return await (serverCancelOrder as unknown as ServerFn<string, boolean>)({ data: orderId });
 }
 
+/** Gets a temporary signed URL for viewing a prescription file. Returns null if the path is empty. */
 export async function getPrescriptionSignedUrl(path: string) {
   return await (serverGetPrescriptionSignedUrl as unknown as ServerFn<string, string | null>)({
     data: path,

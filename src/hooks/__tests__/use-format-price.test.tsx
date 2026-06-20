@@ -46,4 +46,11 @@ describe("useFormatPrice", () => {
     expect(formatted).toContain("50");
     expect(formatted).toContain("€");
   });
+
+  it("uses comma as decimal separator for German locale", () => {
+    const { result } = render("de");
+    const formatted = result.current(1.5);
+    expect(formatted).toMatch(/1[.,]50\s*€/);
+    expect(formatted).toContain(",");
+  });
 });

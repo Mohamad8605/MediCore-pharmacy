@@ -1,4 +1,4 @@
-// Inline CSS so this works even when the main stylesheet doesnt load
+/** Generates a full HTML error page with inline styles so it renders even when the main stylesheet fails to load. */
 export function renderErrorPage(): string {
   return `<!doctype html>
 <html lang="en">

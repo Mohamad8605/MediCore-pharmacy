@@ -11,10 +11,12 @@ type UserRoleInput = {
   action: "add" | "remove";
 };
 
+/** Fetches all users from the server (admin-only operation). */
 export async function getAllUsers() {
   return await (serverGetAllUsers as unknown as () => Promise<Record<string, unknown>[]>)();
 }
 
+/** Adds or removes a role for a given user (admin-only operation). */
 export async function updateUserRole(
   userId: string,
   role: "admin" | "pharmacist" | "patient",
