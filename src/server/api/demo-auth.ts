@@ -10,7 +10,7 @@ interface DemoUser {
   phone?: string;
 }
 
-const DEMO_USERS: DemoUser[] = [
+export const DEMO_USERS: DemoUser[] = [
   {
     id: "demo-admin-0000-0000-0000-000000000001",
     email: "admin@medicore.com",

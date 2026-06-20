@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireAuthUserId, requireStaffRole, requireAdminRole } from "./auth-helpers";
 import { getDemoOrders, getDemoProfiles, saveDemoOrders } from "./demo-store";
+import { DEMO_USERS } from "./demo-auth";
 import type { Database } from "@/integrations/supabase/types";
 
 const STATUSES = [
@@ -64,17 +65,26 @@ export const loadOrders = createServerFn({ method: "GET" }).handler(async (ctx) 
 
   const ids = Array.from(new Set(rows.map((r) => r.user_id)));
 
+  const uuidRE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const realIds = ids.filter((id) => uuidRE.test(id));
+
   let pm: Record<string, ProfileRow> = {};
-  if (ids.length) {
+  if (realIds.length) {
     const { data: profs } = await supabaseAdmin
       .from("profiles")
       .select("id,first_name,last_name")
-      .in("id", ids);
+      .in("id", realIds);
     pm = Object.fromEntries((profs ?? []).map((p) => [p.id, p as unknown as ProfileRow]));
   }
 
   for (const [uid, dp] of getDemoProfiles()) {
     if (!pm[uid]) pm[uid] = dp as unknown as ProfileRow;
+  }
+
+  for (const u of DEMO_USERS) {
+    if (!pm[u.id]) {
+      pm[u.id] = { id: u.id, first_name: u.first_name, last_name: u.last_name } as unknown as ProfileRow;
+    }
   }
 
   return {
