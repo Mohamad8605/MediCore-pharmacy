@@ -75,7 +75,11 @@ const fallbackLanguageContext: LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue>(fallbackLanguageContext);
 
-// Reads accept-language on first visit, persists choice to localStorage
+/**
+ * Provides bilingual (DE/EN) translations to the component tree.
+ * Reads the browser's accept-language header on first visit and persists
+ * the user's choice to localStorage.
+ */
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>("en");
 
@@ -112,6 +116,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Returns the current language context. Must be used within a LanguageProvider. */
 export function useLanguage() {
   return useContext(LanguageContext);
 }

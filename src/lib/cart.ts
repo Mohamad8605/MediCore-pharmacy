@@ -26,8 +26,10 @@ interface CartState {
   needsPrescription: () => boolean;
 }
 
-// Persisted to localStorage so the cart survives page reloads.
-// Quantity is always clamped between 1 and the medications stock level.
+/**
+ * Zustand store for the shopping cart, persisted to localStorage.
+ * Quantities are always clamped between 1 and the medication's stock level.
+ */
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
