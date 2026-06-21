@@ -21,9 +21,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pill, Search } from "lucide-react";
+import { Plus, Pill, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
+import { useStockSync } from "@/lib/use-stock-sync";
 import { fetchAllMedications, createMedication, updateMedication } from "@/lib/admin-service";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -83,6 +84,8 @@ export function MedicationsTab() {
   const [addForm, setAddForm] = useState<MedicationForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const fp = useFormatPrice();
+  const ids = meds.map((m) => m.id);
+  const stockMap = useStockSync(ids);
 
   async function load() {
     setLoading(true);
@@ -303,7 +306,6 @@ export function MedicationsTab() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {/* Mobile card view */}
           <div className="block md:hidden space-y-3 p-4">
             {filtered.map((m) => (
               <Card key={m.id} className={!m.is_active ? "opacity-60" : ""}>
@@ -382,7 +384,7 @@ export function MedicationsTab() {
                           {fp(Number(m.price))}
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Stock:</span> {m.stock}
+                          <span className="text-muted-foreground">Stock:</span> {stockMap[m.id] ?? m.stock}
                         </div>
                         <div>
                           <Badge variant={m.is_active ? "default" : "secondary"}>
@@ -412,7 +414,6 @@ export function MedicationsTab() {
             )}
           </div>
 
-          {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <Table>
               <TableHeader>
@@ -479,7 +480,12 @@ export function MedicationsTab() {
                           className="w-20"
                         />
                       ) : (
-                        m.stock
+                        <span className="inline-flex items-center gap-1">
+                          {stockMap[m.id] ?? m.stock}
+                          {stockMap[m.id] !== undefined && stockMap[m.id] !== m.stock && (
+                            <RefreshCw className="h-3 w-3 text-muted-foreground/50" />
+                          )}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>

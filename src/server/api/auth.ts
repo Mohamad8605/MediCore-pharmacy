@@ -30,8 +30,6 @@ function createAnonClient() {
 }
 
 export type { AuthFailure };
-
-// Uses admin API to create (bypasses GoTrue email regex), then sends confirmation via resend endpoint
 type SignUpInput = {
   email: string;
   password: string;
@@ -76,8 +74,6 @@ export const signIn = createServerFn({ method: "POST" }).handler(async (ctx) => 
 
   return { user: result.user, session: result.session };
 });
-
-// Uses admin API to generate link (bypasses GoTrue email regex), then sends via resend endpoint
 export const resendVerification = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const email = ctx.data as unknown as string;
 

@@ -43,7 +43,6 @@ const trustPoints = [
 function Index() {
   return (
     <>
-      {/* Hero — clean, clinical, focused on a single primary action */}
       <section className="border-b bg-gradient-to-b from-primary/5 to-transparent">
         <div className="container mx-auto grid items-center gap-12 px-4 py-16 md:grid-cols-5 md:py-24">
           <div className="md:col-span-3">
@@ -97,7 +96,6 @@ function Index() {
         </div>
       </section>
 
-      {/* Category quick-pick */}
       <section className="container mx-auto px-4 py-12">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((c) => (
@@ -117,12 +115,10 @@ function Index() {
         </div>
       </section>
 
-      {/* Product grid */}
       <section className="container mx-auto px-4 pb-16">
         <ProductGrid />
       </section>
 
-      {/* Trust band */}
       <section className="border-y bg-slate-50">
         <div className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-3">
           <div>

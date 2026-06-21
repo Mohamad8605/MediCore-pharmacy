@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Cookie } from "lucide-react";
 
 const STORAGE_KEY = "pharmacy.cookie-consent.v1";
-
-// Sites only uses strictly necessary cookies, so this is mainly a legal disclosure
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
 

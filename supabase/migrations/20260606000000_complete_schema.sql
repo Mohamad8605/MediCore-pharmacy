@@ -1,8 +1,3 @@
--- =============================================================================
--- COMPLETE MediCare Online Pharmacy Schema
--- Correctly ordered so no forward reference fails.
--- =============================================================================
-
 -- 1. Enums
 CREATE TYPE public.app_role AS ENUM ('admin', 'pharmacist', 'patient');
 CREATE TYPE public.order_status AS ENUM ('pending','confirmed','in_preparation','ready','completed','cancelled');
@@ -207,18 +202,18 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO anon, authenticated
 
 -- 9. Seed medications
 INSERT INTO public.medications (name, description, category, price, stock, active_ingredient, dosage, manufacturer, side_effects, requires_prescription) VALUES
-('Paracetamol 500mg', 'Effective pain reliever and fever reducer for everyday aches.', 'Pain Relief', 3.49, 250, 'Paracetamol', '500mg, 1-2 tablets every 4-6 hours', 'Generic Pharma', 'Rare: skin rash, liver issues with overdose.', false),
-('Ibuprofen 400mg', 'Anti-inflammatory for headaches, muscle pain and fever.', 'Pain Relief', 4.99, 180, 'Ibuprofen', '400mg up to 3 times daily with food', 'Generic Pharma', 'May cause stomach upset, dizziness.', false),
-('Amoxicillin 500mg', 'Broad-spectrum antibiotic for bacterial infections.', 'Antibiotics', 12.50, 60, 'Amoxicillin', '500mg three times daily for 7 days', 'MediLab', 'Nausea, diarrhoea, allergic reactions possible.', true),
-('Cetirizine 10mg', 'Once-a-day allergy relief for hay fever and skin allergies.', 'Allergy', 5.75, 140, 'Cetirizine HCl', '10mg once daily', 'AllergyCare', 'Drowsiness, dry mouth.', false),
-('Omeprazole 20mg', 'Reduces stomach acid for heartburn and reflux.', 'Digestive Health', 8.20, 90, 'Omeprazole', '20mg once daily before food', 'GastroPharm', 'Headache, abdominal pain.', true),
-('Vitamin D3 1000 IU', 'Daily vitamin D supplement for bone health.', 'Vitamins', 6.99, 300, 'Cholecalciferol', '1 capsule daily', 'WellLife', 'Generally well tolerated.', false),
-('Salbutamol Inhaler', 'Quick-relief inhaler for asthma symptoms.', 'Respiratory', 14.00, 45, 'Salbutamol', '1-2 puffs as needed', 'BreathePlus', 'Tremor, fast heartbeat.', true),
-('Loratadine 10mg', 'Non-drowsy antihistamine for allergies.', 'Allergy', 5.25, 160, 'Loratadine', '10mg once daily', 'AllergyCare', 'Headache, dry mouth.', false),
-('Cough Syrup 200ml', 'Soothing syrup for dry and tickly coughs.', 'Cold & Flu', 7.50, 110, 'Dextromethorphan', '10ml every 6 hours', 'WellLife', 'Drowsiness possible.', false),
-('Hand Sanitizer 250ml', '70% alcohol sanitizer, kills 99.9% of germs.', 'Personal Care', 3.99, 400, 'Ethanol', 'Apply as needed', 'CleanCo', 'Dry skin with frequent use.', false),
-('Multivitamin Adults', '30-day supply of essential vitamins and minerals.', 'Vitamins', 9.99, 220, 'Vitamin & mineral blend', '1 tablet daily', 'WellLife', 'Generally well tolerated.', false),
-('Insulin Glargine', 'Long-acting insulin for type 1 and 2 diabetes.', 'Diabetes', 28.00, 30, 'Insulin glargine', 'As prescribed', 'DiaCare', 'Hypoglycaemia, injection site reactions.', true);
+('Paracetamol 500mg', 'Effective pain reliever and fever reducer for everyday aches.', 'Pain Relief', 3.49, 247, 'Paracetamol', '500mg, 1-2 tablets every 4-6 hours', 'Generic Pharma', 'Rare: skin rash, liver issues with overdose.', false),
+('Ibuprofen 400mg', 'Anti-inflammatory for headaches, muscle pain and fever.', 'Pain Relief', 4.99, 183, 'Ibuprofen', '400mg up to 3 times daily with food', 'Generic Pharma', 'May cause stomach upset, dizziness.', false),
+('Amoxicillin 500mg', 'Broad-spectrum antibiotic for bacterial infections.', 'Antibiotics', 12.50, 58, 'Amoxicillin', '500mg three times daily for 7 days', 'MediLab', 'Nausea, diarrhoea, allergic reactions possible.', true),
+('Cetirizine 10mg', 'Once-a-day allergy relief for hay fever and skin allergies.', 'Allergy', 5.75, 143, 'Cetirizine HCl', '10mg once daily', 'AllergyCare', 'Drowsiness, dry mouth.', false),
+('Omeprazole 20mg', 'Reduces stomach acid for heartburn and reflux.', 'Digestive Health', 8.20, 87, 'Omeprazole', '20mg once daily before food', 'GastroPharm', 'Headache, abdominal pain.', true),
+('Vitamin D3 1000 IU', 'Daily vitamin D supplement for bone health.', 'Vitamins', 6.99, 312, 'Cholecalciferol', '1 capsule daily', 'WellLife', 'Generally well tolerated.', false),
+('Salbutamol Inhaler', 'Quick-relief inhaler for asthma symptoms.', 'Respiratory', 14.00, 42, 'Salbutamol', '1-2 puffs as needed', 'BreathePlus', 'Tremor, fast heartbeat.', true),
+('Loratadine 10mg', 'Non-drowsy antihistamine for allergies.', 'Allergy', 5.25, 157, 'Loratadine', '10mg once daily', 'AllergyCare', 'Headache, dry mouth.', false),
+('Cough Syrup 200ml', 'Soothing syrup for dry and tickly coughs.', 'Cold & Flu', 7.50, 114, 'Dextromethorphan', '10ml every 6 hours', 'WellLife', 'Drowsiness possible.', false),
+('Hand Sanitizer 250ml', '70% alcohol sanitizer, kills 99.9% of germs.', 'Personal Care', 3.99, 396, 'Ethanol', 'Apply as needed', 'CleanCo', 'Dry skin with frequent use.', false),
+('Multivitamin Adults', '30-day supply of essential vitamins and minerals.', 'Vitamins', 9.99, 224, 'Vitamin & mineral blend', '1 tablet daily', 'WellLife', 'Generally well tolerated.', false),
+('Insulin Glargine', 'Long-acting insulin for type 1 and 2 diabetes.', 'Diabetes', 28.00, 28, 'Insulin glargine', 'As prescribed', 'DiaCare', 'Hypoglycaemia, injection site reactions.', true);
 
 -- 10. Seed app_settings
 INSERT INTO public.app_settings (key, value) VALUES

@@ -4,11 +4,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 import { getEnvVar } from "./env";
 
-// Creates a temporary anon client to verify the Bearer token from the request header
 export async function getAuthUserId(): Promise<string | null> {
   const request = getRequest();
 
-  // 1) Try real Supabase Bearer token
   const authHeader = request?.headers?.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
     const SUPABASE_URL =
@@ -31,7 +29,6 @@ export async function getAuthUserId(): Promise<string | null> {
     }
   }
 
-  // 2) Fallback to Demo session (set by attachSupabaseAuth middleware)
   if (authHeader?.startsWith("Demo ")) {
     try {
       const raw = authHeader.replace("Demo ", "");
@@ -46,7 +43,6 @@ export async function getAuthUserId(): Promise<string | null> {
   return null;
 }
 
-/** Returns the parsed demo session payload, or null if the request is not a demo request. */
 function getDemoSessionPayload(): Record<string, unknown> | null {
   const request = getRequest();
   const authHeader = request?.headers?.get("authorization");
@@ -58,22 +54,18 @@ function getDemoSessionPayload(): Record<string, unknown> | null {
   }
 }
 
-/** True when the current request uses demo authentication (the Authorization header starts with "Demo "). */
 export function isDemoRequest(): boolean {
   return getDemoSessionPayload() !== null;
 }
 
-// Throws 401 instead of returning null
 export async function requireAuthUserId(): Promise<string> {
   const userId = await getAuthUserId();
   if (!userId) throw new Response("Unauthorized", { status: 401 });
   return userId;
 }
 
-// Checks user_roles for admin or pharmacist — throws 403 if neither
 export async function requireStaffRole(): Promise<string> {
   const userId = await requireAuthUserId();
-  // Demo users: check roles from the session payload instead of the DB
   const demoPayload = getDemoSessionPayload();
   if (demoPayload) {
     const demoRoles = (demoPayload.roles ?? []) as string[];
@@ -93,10 +85,8 @@ export async function requireStaffRole(): Promise<string> {
   return userId;
 }
 
-// Stricter than requireStaffRole — pharmacist alone isnt enough
 export async function requireAdminRole(): Promise<string> {
   const userId = await requireStaffRole();
-  // Demo users: checked in requireStaffRole already; just verify admin
   const demoPayload = getDemoSessionPayload();
   if (demoPayload) {
     const demoRoles = (demoPayload.roles ?? []) as string[];

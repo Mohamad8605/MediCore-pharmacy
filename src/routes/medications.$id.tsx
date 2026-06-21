@@ -8,10 +8,10 @@ import { ArrowLeft, Pill, ShoppingCart } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCart } from "@/lib/cart";
-import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
+import { addToCartWithCheck } from "@/lib/add-to-cart-with-check";
 import { fetchMedicationById } from "@/lib/medication-service";
+import { useStockSync } from "@/lib/use-stock-sync";
 import type { Database } from "@/integrations/supabase/types";
 
 type Medication = Database["public"]["Tables"]["medications"]["Row"];
@@ -28,8 +28,8 @@ function MedicationDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
   const [imageFailed, setImageFailed] = useState(false);
-  const add = useCart((s) => s.add);
   const fp = useFormatPrice();
+  const stockMap = useStockSync(med ? [med.id] : []);
 
   useEffect(() => {
     setLoading(true);
@@ -122,8 +122,8 @@ function MedicationDetailPage() {
               )}
               <p>
                 <strong>Stock:</strong>{" "}
-                {med.stock > 0 ? (
-                  <span className="text-primary">{med.stock} available</span>
+                {(stockMap[med.id] ?? med.stock) > 0 ? (
+                  <span className="text-primary">{stockMap[med.id] ?? med.stock} available</span>
                 ) : (
                   <span className="text-destructive">Out of stock</span>
                 )}
@@ -171,18 +171,15 @@ function MedicationDetailPage() {
             <Input
               type="number"
               min={1}
-              max={med.stock}
+              max={stockMap[med.id] ?? med.stock}
               value={qty}
               onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
               className="w-20"
             />
             <Button
               size="lg"
-              disabled={med.stock === 0}
-              onClick={() => {
-                add(med, qty);
-                toast.success(`${qty} × ${med.name} added`);
-              }}
+              disabled={(stockMap[med.id] ?? med.stock) === 0}
+              onClick={() => addToCartWithCheck(med, qty)}
             >
               <ShoppingCart className="mr-2 h-4 w-4" /> Add to cart
             </Button>

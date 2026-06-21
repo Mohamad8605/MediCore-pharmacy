@@ -17,6 +17,7 @@ import { ImpressumFooter } from "@/components/ImpressumFooter";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ResponsivePreviewProvider } from "@/components/ResponsivePreview";
+import { CartStockSync } from "@/components/CartStockSync";
 
 function NotFoundComponent() {
   return (
@@ -137,6 +138,7 @@ function RootComponent() {
           <AuthProvider>
             <ResponsivePreviewProvider>
               <div className="flex min-h-screen flex-col">
+                <CartStockSync />
                 <Navbar />
                 <main className="flex-1">
                   <Outlet />

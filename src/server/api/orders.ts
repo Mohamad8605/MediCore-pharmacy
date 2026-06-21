@@ -82,7 +82,6 @@ type OrderInput = {
   prescription_path: string | null;
 };
 
-// Uses userId from the session, not from the request body — prevents impersonation
 export const createOrder = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { total_price, delivery_method, street, city, postcode, notes, prescription_path } =
     ctx.data as unknown as OrderInput;
@@ -162,7 +161,6 @@ export const createOrderItems = createServerFn({ method: "POST" }).handler(async
   const userId = await requireAuthUserId();
 
   if (isDemoRequest()) {
-    // Look up medication names for the detail page
     const ids = items.map((i) => i.medication_id);
     const { data: meds } = await supabaseAdmin.from("medications").select("id, name").in("id", ids);
     const nameMap = Object.fromEntries((meds ?? []).map((m) => [m.id, m.name]));
@@ -178,11 +176,76 @@ export const createOrderItems = createServerFn({ method: "POST" }).handler(async
       entry.items.push(...demoItems);
       saveDemoOrders();
     }
+    for (const item of items) {
+      const { error: decError } = await supabaseAdmin.rpc("decrement_stock", {
+        p_id: item.medication_id,
+        p_quantity: item.quantity,
+      });
+      if (decError) {
+        console.error(`Failed to decrement stock for ${item.medication_id}:`, decError.message);
+      }
+    }
     return;
   }
 
-  const { error } = await supabaseAdmin.from("order_items").insert(items);
+  const { error: rpcError } = await supabaseAdmin.rpc("place_order_items", {
+    p_items: items,
+  });
+  if (rpcError) throw rpcError;
+});
+
+export const checkMedicationStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const { medicationId } = ctx.data as unknown as { medicationId: string };
+  const { data, error } = await supabaseAdmin
+    .from("medications")
+    .select("id, stock, name")
+    .eq("id", medicationId)
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("Medication not found");
+  return data;
+});
+
+export const fetchMedicationStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const ids = ctx.data as unknown as string[];
+  if (!ids.length) return [];
+  const { data, error } = await supabaseAdmin
+    .from("medications")
+    .select("id, stock")
+    .in("id", ids);
+  if (error) throw error;
+  return data ?? [];
+});
+
+export const validateStock = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const items = ctx.data as unknown as Array<{ medication_id: string; quantity: number }>;
+  await requireAuthUserId();
+
+  if (isDemoRequest()) return;
+
+  const ids = items.map((i) => i.medication_id);
+  const { data: meds, error } = await supabaseAdmin
+    .from("medications")
+    .select("id, name, stock")
+    .in("id", ids);
+
+  if (error) throw error;
+
+  const map = Object.fromEntries((meds ?? []).map((m) => [m.id, m]));
+  const shortages: string[] = [];
+
+  for (const item of items) {
+    const med = map[item.medication_id];
+    if (!med) {
+      shortages.push(`Medication ${item.medication_id} not found`);
+    } else if (med.stock < item.quantity) {
+      shortages.push(`"${med.name}" only ${med.stock} in stock, requested ${item.quantity}`);
+    }
+  }
+
+  if (shortages.length > 0) {
+    throw new Error(`Insufficient stock:\n${shortages.join("\n")}`);
+  }
 });
 
 type UploadInput = {
@@ -190,15 +253,13 @@ type UploadInput = {
   fileBase64: string;
 };
 
-// Validates size, extension AND magic bytes so someone cant rename a .exe to .pdf
 const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"];
-const MAX_PRESCRIPTION_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_PRESCRIPTION_SIZE = 5 * 1024 * 1024;
 
-// Magic bytes to catch renamed files (e.g. .exe -> .pdf)
 const MAGIC_BYTES: Record<string, Uint8Array> = {
-  "\xff\xd8\xff": new Uint8Array([0xff, 0xd8, 0xff]), // JPEG
-  "\x89PNG\r\n\x1a\n": new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), // PNG
-  "%PDF": new Uint8Array([0x25, 0x50, 0x44, 0x46]), // PDF
+  "\xff\xd8\xff": new Uint8Array([0xff, 0xd8, 0xff]),
+  "\x89PNG\r\n\x1a\n": new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  "%PDF": new Uint8Array([0x25, 0x50, 0x44, 0x46]),
 };
 
 export const uploadPrescription = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -234,8 +295,6 @@ export const uploadPrescription = createServerFn({ method: "POST" }).handler(asy
   if (!isJpeg && !isPng && !isPdf) {
     return { path: null, error: "File content does not match any allowed format (JPG, PNG, PDF)" };
   }
-
-  // Demo users: skip storage upload, just return a synthetic path
   if (isDemoRequest()) {
     return { path: `demo/${path}` };
   }
@@ -251,14 +310,12 @@ export const uploadPrescription = createServerFn({ method: "POST" }).handler(asy
 export const getPrescriptionSignedUrl = createServerFn({ method: "GET" }).handler(async (ctx) => {
   const path = ctx.data as unknown as string;
   await requireAuthUserId();
-  // Demo paths are synthetic, not stored in Supabase Storage
   if (isDemoRequest() || path.startsWith("demo/")) return null;
   const { data } = await supabaseAdmin.storage.from("prescriptions").createSignedUrl(path, 3600);
 
   return data?.signedUrl ?? null;
 });
 
-// Ownership + status check happens server-side — cant cancel someone elses order or a shipped one
 export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const orderId = ctx.data as unknown as string;
   const userId = await requireAuthUserId();
@@ -269,6 +326,17 @@ export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx
     if (!entry) throw new Error("Order not found");
     if (entry.order.user_id !== userId) throw new Error("You can only cancel your own orders");
     if (entry.order.status !== "pending") throw new Error("Only pending orders can be cancelled");
+
+    for (const item of entry.items) {
+      const { error: incError } = await supabaseAdmin.rpc("increment_stock", {
+        p_id: item.medication_id,
+        p_quantity: item.quantity,
+      });
+      if (incError) {
+        console.error(`Failed to restore stock for ${item.medication_id}:`, incError.message);
+      }
+    }
+
     entry.order.status = "cancelled";
     saveDemoOrders();
     return true;
@@ -284,11 +352,61 @@ export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx
   if (order.user_id !== userId) throw new Error("You can only cancel your own orders");
   if (order.status !== "pending") throw new Error("Only pending orders can be cancelled");
 
+  const { data: orderItems, error: itemsErr } = await supabaseAdmin
+    .from("order_items")
+    .select("medication_id, quantity")
+    .eq("order_id", orderId);
+
+  if (itemsErr) throw itemsErr;
+
   const { error } = await supabaseAdmin
     .from("orders")
     .update({ status: "cancelled" })
     .eq("id", orderId);
 
+  if (error) throw error;
+
+  for (const item of orderItems ?? []) {
+    const { error: incError } = await supabaseAdmin.rpc("increment_stock", {
+      p_id: item.medication_id,
+      p_quantity: item.quantity,
+    });
+    if (incError) {
+      console.error(`Failed to restore stock for ${item.medication_id}:`, incError.message);
+    }
+  }
+
+  return true;
+});
+
+export const deleteOrder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const orderId = ctx.data as unknown as string;
+  const userId = await requireAuthUserId();
+
+  if (isDemoRequest()) {
+    const existing = getDemoOrders().get(userId) ?? [];
+    const entry = existing.find((e) => e.order.id === orderId);
+    if (!entry) throw new Error("Order not found");
+    if (entry.order.user_id !== userId) throw new Error("You can only delete your own orders");
+    if (entry.order.status !== "cancelled") throw new Error("Only cancelled orders can be deleted");
+
+    const updated = existing.filter((e) => e.order.id !== orderId);
+    getDemoOrders().set(userId, updated);
+    saveDemoOrders();
+    return true;
+  }
+
+  const { data: order, error: fetchErr } = await supabaseAdmin
+    .from("orders")
+    .select("id, user_id, status")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (fetchErr || !order) throw new Error("Order not found");
+  if (order.user_id !== userId) throw new Error("You can only delete your own orders");
+  if (order.status !== "cancelled") throw new Error("Only cancelled orders can be deleted");
+
+  const { error } = await supabaseAdmin.from("orders").delete().eq("id", orderId);
   if (error) throw error;
   return true;
 });

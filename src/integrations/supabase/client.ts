@@ -1,7 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
-
-// Lazy Proxy — client isnt created until first method call, avoids SSR env issues
 function createSupabaseClient() {
   const SUPABASE_URL =
     import.meta.env.VITE_SUPABASE_URL ||

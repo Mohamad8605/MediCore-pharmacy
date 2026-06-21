@@ -13,20 +13,21 @@ import {
 } from "@/components/ui/select";
 import { Search, Pill, ShoppingCart, ShieldAlert, BadgeCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCart } from "@/lib/cart";
-import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { useMedications } from "@/hooks/use-medications";
+import { useStockSync } from "@/lib/use-stock-sync";
+import { addToCartWithCheck } from "@/lib/add-to-cart-with-check";
 import { Route as ParentRoute } from "@/routes/medications";
 
 function MedicationsPage() {
   const { category: urlCategory } = ParentRoute.useSearch();
   const navigate = useNavigate();
   const { meds, loading, categories, filter } = useMedications();
+  const ids = useMemo(() => meds.map((m) => m.id), [meds]);
+  const stockMap = useStockSync(ids);
   const [q, setQ] = useState("");
   const [category, setCategory] = useState(urlCategory ?? "all");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const add = useCart((s) => s.add);
   const fp = useFormatPrice();
 
   const filtered = useMemo(
@@ -91,7 +92,8 @@ function MedicationsPage() {
         </div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((m) => (
+          {filtered.map((m) => {
+            return (
             <Card key={m.id} className="overflow-hidden transition hover:shadow-lg">
               <Link to="/medications/$id" params={{ id: m.id }}>
                 <div className="flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10">
@@ -135,23 +137,21 @@ function MedicationsPage() {
                   <div>
                     <span className="text-lg font-bold text-primary">{fp(Number(m.price))}</span>
                     <p className="text-[11px] text-muted-foreground">
-                      {m.stock > 0 ? `${m.stock} in stock` : "Out of stock"}
+                      {(stockMap[m.id] ?? m.stock) > 0 ? `${stockMap[m.id] ?? m.stock} in stock` : "Out of stock"}
                     </p>
                   </div>
                   <Button
                     size="sm"
-                    disabled={m.stock === 0}
-                    onClick={() => {
-                      add(m, 1);
-                      toast.success(`${m.name} added to cart`);
-                    }}
+                    disabled={(stockMap[m.id] ?? m.stock) === 0}
+                    onClick={() => addToCartWithCheck(m, 1)}
                   >
                     <ShoppingCart className="mr-1 h-4 w-4" /> Add
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
           {filtered.length === 0 && (
             <p className="col-span-full text-center text-muted-foreground">
               No medications match your search.

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: {} as Record<string, unknown>,
+  supabaseAdmin: { rpc: vi.fn() } as Record<string, unknown>,
 }));
 
 vi.mock("@/server/api/auth-helpers", () => ({
@@ -58,13 +58,31 @@ describe("cancelOrder", () => {
     });
 
     const chain2 = createMockChain();
-    chain2.eq = vi.fn().mockResolvedValue({ error: null });
+    chain2.eq = vi.fn().mockResolvedValue({
+      data: [{ medication_id: "med-1", quantity: 2 }],
+      error: null,
+    });
 
-    mockSupabase.from = vi.fn().mockReturnValueOnce(chain1).mockReturnValueOnce(chain2);
+    const chain3 = createMockChain();
+    chain3.eq = vi.fn().mockResolvedValue({ error: null });
+
+    mockSupabase.from = vi
+      .fn()
+      .mockReturnValueOnce(chain1)
+      .mockReturnValueOnce(chain2)
+      .mockReturnValueOnce(chain3);
+
+    const rpcMock = (mockSupabase.rpc as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      error: null,
+    });
 
     const result = await cancelOrderFn({ data: "order-1" });
     expect(result).toBe(true);
-    expect(mockSupabase.from).toHaveBeenCalledTimes(2);
+    expect(mockSupabase.from).toHaveBeenCalledTimes(3);
+    expect(rpcMock).toHaveBeenCalledWith("increment_stock", {
+      p_id: "med-1",
+      p_quantity: 2,
+    });
   });
 
   it("throws when the order is not pending", async () => {

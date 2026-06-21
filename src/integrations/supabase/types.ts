@@ -269,6 +269,26 @@ export type Database = {
         };
         Returns: boolean;
       };
+      decrement_stock: {
+        Args: {
+          p_id: string;
+          p_quantity: number;
+        };
+        Returns: number;
+      };
+      increment_stock: {
+        Args: {
+          p_id: string;
+          p_quantity: number;
+        };
+        Returns: number;
+      };
+      place_order_items: {
+        Args: {
+          p_items: unknown;
+        };
+        Returns: void;
+      };
     };
     Enums: {
       app_role: "admin" | "pharmacist" | "patient";

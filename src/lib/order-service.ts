@@ -6,7 +6,11 @@ import {
   createOrderItems as serverCreateOrderItems,
   uploadPrescription as serverUploadPrescription,
   cancelOrder as serverCancelOrder,
+  deleteOrder as serverDeleteOrder,
   getPrescriptionSignedUrl as serverGetPrescriptionSignedUrl,
+  checkMedicationStock as serverCheckMedicationStock,
+  fetchMedicationStock as serverFetchMedicationStock,
+  validateStock as serverValidateStock,
 } from "@/server/api/orders";
 
 type ServerFn<TInput, TOutput> = (args: { data: TInput }) => Promise<TOutput>;
@@ -30,12 +34,10 @@ type OrderItemInput = Array<{
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 
-/** Fetches all orders placed by the currently authenticated user. */
 export async function fetchUserOrders() {
   return await (serverFetchUserOrders as unknown as () => Promise<Record<string, unknown>[]>)();
 }
 
-/** Fetches a single order by its ID. Returns null if the order does not exist or does not belong to the user. */
 export async function fetchOrderById(orderId: string) {
   return await (
     serverFetchOrderById as unknown as ServerFn<string, Record<string, unknown> | null>
@@ -44,21 +46,18 @@ export async function fetchOrderById(orderId: string) {
   });
 }
 
-/** Creates a new order record on the server. */
 export async function createOrder(order: OrderInput) {
   return await (serverCreateOrder as unknown as ServerFn<OrderInput, OrderRow>)({
     data: order,
   });
 }
 
-/** Inserts order-item rows for a newly created order. */
 export async function createOrderItems(items: OrderItemInput) {
   return await (serverCreateOrderItems as unknown as ServerFn<OrderItemInput, void>)({
     data: items,
   });
 }
 
-/** Converts a prescription file to base64 on the client, then sends it to the server for storage. */
 export async function uploadPrescription(
   file: File,
 ): Promise<{ path: string | null; error?: string }> {
@@ -84,12 +83,38 @@ export async function uploadPrescription(
   });
 }
 
-/** Cancels an order by ID. Returns true if the cancellation was successful. */
+export async function checkMedicationStock(medicationId: string) {
+  return await (
+    serverCheckMedicationStock as unknown as ServerFn<
+      { medicationId: string },
+      { id: string; stock: number; name: string } | null
+    >
+  )({ data: { medicationId } });
+}
+
+type StockCheckInput = Array<{ medication_id: string; quantity: number }>;
+
+export async function fetchMedicationStock(ids: string[]) {
+  return await (
+    serverFetchMedicationStock as unknown as ServerFn<string[], Array<{ id: string; stock: number }>>
+  )({ data: ids });
+}
+
+
+export async function validateStock(items: StockCheckInput) {
+  return await (serverValidateStock as unknown as ServerFn<StockCheckInput, void>)({
+    data: items,
+  });
+}
+
 export async function cancelOrder(orderId: string) {
   return await (serverCancelOrder as unknown as ServerFn<string, boolean>)({ data: orderId });
 }
 
-/** Gets a temporary signed URL for viewing a prescription file. Returns null if the path is empty. */
+export async function deleteOrder(orderId: string) {
+  return await (serverDeleteOrder as unknown as ServerFn<string, boolean>)({ data: orderId });
+}
+
 export async function getPrescriptionSignedUrl(path: string) {
   return await (serverGetPrescriptionSignedUrl as unknown as ServerFn<string, string | null>)({
     data: path,

@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, XCircle } from "lucide-react";
+import { Eye, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFormatPrice } from "@/hooks/use-format-price";
-import { fetchUserOrders, cancelOrder } from "@/lib/order-service";
+import { fetchUserOrders, cancelOrder, deleteOrder } from "@/lib/order-service";
 import { Route as ParentRoute } from "@/routes/orders";
 
 type OrderSummary = {
@@ -44,6 +44,17 @@ function OrdersPage() {
       toast.success("Order cancelled");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to cancel order");
+    }
+  }
+
+  async function handleDelete(orderId: string) {
+    if (!confirm("Delete this cancelled order permanently?")) return;
+    try {
+      await deleteOrder(orderId);
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      toast.success("Order deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete order");
     }
   }
 
@@ -118,6 +129,17 @@ function OrdersPage() {
                     >
                       <XCircle className="mr-1 h-4 w-4" />
                       Cancel
+                    </Button>
+                  )}
+                  {o.status === "cancelled" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDelete(o.id)}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Delete
                     </Button>
                   )}
                 </div>

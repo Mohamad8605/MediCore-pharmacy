@@ -191,8 +191,9 @@ function CartGroup({
                 </button>
                 <span className="w-6 text-center text-sm tabular-nums">{i.quantity}</span>
                 <button
-                  className="p-1.5"
+                  className="p-1.5 disabled:opacity-30"
                   onClick={() => onQty(i.medication.id, i.quantity + 1)}
+                  disabled={i.quantity >= i.medication.stock}
                   aria-label="Increase"
                 >
                   <Plus className="h-3.5 w-3.5" />

@@ -7,12 +7,10 @@ import type { Database } from "@/integrations/supabase/types";
 type Medication = Database["public"]["Tables"]["medications"]["Row"];
 type ServerFn<TInput, TOutput> = (args: { data: TInput }) => Promise<TOutput>;
 
-/** Fetches all active medications (visible to customers in the catalogue). */
 export async function fetchActiveMedications(): Promise<Medication[]> {
   return await (serverFetchActiveMedications as unknown as () => Promise<Medication[]>)();
 }
 
-/** Fetches a single medication by its ID. Returns null if not found. */
 export async function fetchMedicationById(id: string): Promise<Medication | null> {
   return await (serverFetchMedicationById as unknown as ServerFn<string, Medication | null>)({
     data: id,

@@ -62,7 +62,6 @@ function LoginPage() {
     try {
       const result = await signIn(email, password);
       if (result.failure) {
-        // Try demo auth as fallback for any Supabase failure
         const demo = await demoSignIn(email, password);
         if (!demo.failure && demo.user) {
           const storageKey = `demo-uuid-${email}`;
@@ -107,7 +106,6 @@ function LoginPage() {
     setFailure(null);
     setView("form");
     try {
-      // Clear any existing session so the UI switches to the new user
       if (user) clearDemoSessionGlobal();
 
       const result = await demoSignIn(email, password);
@@ -116,7 +114,6 @@ function LoginPage() {
         return;
       }
       if (result.user) {
-        // Stable UUID per email so orders survive re-login
         const storageKey = `demo-uuid-${email}`;
         let stableId = localStorage.getItem(storageKey);
         if (!stableId) {

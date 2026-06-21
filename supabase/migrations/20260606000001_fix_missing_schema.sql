@@ -1,6 +1,4 @@
--- =============================================================
 -- FIX: Missing app_settings table
--- =============================================================
 CREATE TABLE IF NOT EXISTS public.app_settings (
   key TEXT PRIMARY KEY,
   value JSONB NOT NULL DEFAULT '{}',

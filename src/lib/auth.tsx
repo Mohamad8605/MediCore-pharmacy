@@ -41,11 +41,6 @@ function clearDemoSession() {
   localStorage.removeItem(DEMO_STORAGE_KEY);
 }
 
-/**
- * Provides authentication state to the component tree.
- * Handles both real Supabase sessions and demo sessions.
- * Listens for auth state changes and populates user roles.
- */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -61,10 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsDemo(true);
       setLoading(false);
     }
-
-    // Always set up the Supabase listener so real auth works after demo sign-out
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      // Don't let Supabase override an active demo session
       if (loadDemoSession()) return;
       setSession(s);
       setUser(s?.user ?? null);
@@ -74,8 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRoles([]);
       }
     });
-
-    // Only fetch existing Supabase session when no demo is active
     if (!demo) {
       supabase.auth
         .getSession()
@@ -136,28 +126,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Saves demo credentials to localStorage and dispatches a custom event so
- * AuthProvider picks up the change without a page reload.
- */
 export function setDemoSession(user: User, roles: Role[]) {
   saveDemoSession({ user, roles });
   window.dispatchEvent(new CustomEvent("demo-session-changed"));
 }
 
-/**
- * Clears the demo session from localStorage and dispatches a custom event
- * so AuthProvider resets to an unauthenticated state.
- */
 export function clearDemoSessionGlobal() {
   localStorage.removeItem(DEMO_STORAGE_KEY);
   window.dispatchEvent(new CustomEvent("demo-session-changed"));
 }
 
-/**
- * Returns the current auth context including user, session, roles, and signOut.
- * Must be used within an AuthProvider. Throws if called outside one.
- */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");

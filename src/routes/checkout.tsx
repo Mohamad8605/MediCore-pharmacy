@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { SHIPPING_FEE, SHIPPING_THRESHOLD } from "@/lib/constants";
 import { fetchProfile } from "@/lib/profile-service";
-import { createOrder, createOrderItems, uploadPrescription } from "@/lib/order-service";
+import { createOrder, createOrderItems, uploadPrescription, validateStock } from "@/lib/order-service";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Mohamad's MediCore Pharmacy GmbH online" }] }),
@@ -33,11 +33,11 @@ function CheckoutPage() {
   const [file, setFile] = useState<File | null>(null);
   const [useDemoPrescription, setUseDemoPrescription] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Must be signed in and have items in cart — redirect otherwise
+  const justPlaced = useRef(false);
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
-    if (!authLoading && items.length === 0) navigate({ to: "/cart" });
+    if (!authLoading && items.length === 0 && !justPlaced.current)
+      navigate({ to: "/cart" });
   }, [authLoading, user, items.length, navigate]);
 
   useEffect(() => {
@@ -81,6 +81,13 @@ function CheckoutPage() {
         if (error) throw new Error(error);
         prescriptionPath = path;
       }
+      await validateStock(
+        items.map((i) => ({
+          medication_id: i.medication.id,
+          quantity: i.quantity,
+        })),
+      );
+
       const order = await createOrder({
         total_price: grandTotal,
         delivery_method: method,
@@ -98,6 +105,7 @@ function CheckoutPage() {
           unit_price: i.medication.price,
         })),
       );
+      justPlaced.current = true;
       clear();
       toast.success("Order placed!");
       navigate({ to: "/orders/$id", params: { id: order.id } });

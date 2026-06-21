@@ -4,10 +4,6 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Medication = Database["public"]["Tables"]["medications"]["Row"];
 
-/**
- * Fetches the active medication catalogue on mount and provides client-side
- * search (by name or description) and category filtering.
- */
 export function useMedications() {
   const [meds, setMeds] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);

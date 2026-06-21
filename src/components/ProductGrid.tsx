@@ -4,18 +4,18 @@ import { Search, ShoppingCart, ShieldAlert, BadgeCheck, Pill } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/lib/cart";
-import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { useMedications } from "@/hooks/use-medications";
+import { useStockSync } from "@/lib/use-stock-sync";
+import { addToCartWithCheck } from "@/lib/add-to-cart-with-check";
 
 export function ProductGrid() {
   const { meds, loading, categories, filter } = useMedications();
+  const ids = useMemo(() => meds.map((m) => m.id), [meds]);
+  const stockMap = useStockSync(ids);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const add = useCart((s) => s.add);
-  const cartItems = useCart((s) => s.items);
   const fp = useFormatPrice();
 
   const filtered = useMemo(() => filter(query, category), [query, category, filter]);
@@ -59,8 +59,7 @@ export function ProductGrid() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((p) => {
-          const cartQty = cartItems.find((i) => i.medication.id === p.id)?.quantity ?? 0;
-          const remaining = p.stock - cartQty;
+          const remaining = stockMap[p.id] ?? p.stock;
           return (
           <article
             key={p.id}
@@ -112,10 +111,7 @@ export function ProductGrid() {
                 size="sm"
                 className="gap-1.5 rounded-xl"
                 disabled={remaining === 0}
-                onClick={() => {
-                  add(p, 1);
-                  toast.success(`${p.name} added to cart`);
-                }}
+                onClick={() => addToCartWithCheck(p, 1)}
               >
                 <ShoppingCart className="h-4 w-4" />
                 Add

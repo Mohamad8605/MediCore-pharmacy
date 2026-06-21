@@ -8,8 +8,6 @@ type ContactInput = {
   subject: string;
   message: string;
 };
-
-// No auth required — anyone can reach out
 export const submitContactMessage = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { name, email, subject, message } = ctx.data as unknown as ContactInput;
 

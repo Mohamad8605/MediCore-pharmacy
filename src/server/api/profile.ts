@@ -2,8 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 import { requireAuthUserId, isDemoRequest } from "./auth-helpers";
-
-// Profiles are auto-created via DB trigger on signup, so null means trigger failed
 export const fetchProfile = createServerFn({ method: "GET" }).handler(async () => {
   const userId = await requireAuthUserId();
 
@@ -17,8 +15,6 @@ export const fetchProfile = createServerFn({ method: "GET" }).handler(async () =
     console.error("fetchProfile error:", error.message);
     return null;
   }
-
-  // Demo users have no DB profile — return a synthetic one
   if (!data && isDemoRequest()) {
     return {
       id: userId,

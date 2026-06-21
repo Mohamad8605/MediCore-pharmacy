@@ -2,8 +2,6 @@ import { useCallback, useRef, useState } from "react";
 import { QrCode, Upload, CheckCircle2, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-// Simulates e-prescription upload — in production this would forward the encrypted file to the pharmacy backend
 export function ERezeptScanner() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -18,8 +16,6 @@ export function ERezeptScanner() {
     }
     setScanning(true);
     setFilename(file.name);
-    // Simulated decode — production would parse the document and validate
-    // the prescription signature before submission to the dispensary.
     window.setTimeout(() => {
       const fake = "RX-" + Math.random().toString(36).slice(2, 10).toUpperCase();
       setToken(fake);

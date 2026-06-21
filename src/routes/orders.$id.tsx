@@ -1,12 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Trash2, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
-import { fetchOrderById, getPrescriptionSignedUrl, cancelOrder } from "@/lib/order-service";
+import { fetchOrderById, getPrescriptionSignedUrl, cancelOrder, deleteOrder } from "@/lib/order-service";
 
 type OrderItem = {
   quantity: number;
@@ -41,9 +41,11 @@ const STEPS = [
 
 function OrderDetailPage() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const fp = useFormatPrice();
 
   async function handleCancel() {
@@ -57,6 +59,20 @@ function OrderDetailPage() {
       toast.error(err instanceof Error ? err.message : "Failed to cancel order");
     } finally {
       setCancelling(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this cancelled order permanently?")) return;
+    setDeleting(true);
+    try {
+      await deleteOrder(id);
+      toast.success("Order deleted");
+      navigate({ to: "/orders" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete order");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -222,6 +238,16 @@ function OrderDetailPage() {
               <div className="text-center py-6">
                 <XCircle className="mx-auto h-12 w-12 text-destructive" />
                 <p className="mt-2 font-semibold text-destructive">Cancelled</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 text-muted-foreground hover:text-destructive"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {deleting ? "Deleting…" : "Delete order"}
+                </Button>
               </div>
             ) : (
               <>

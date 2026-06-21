@@ -157,8 +157,6 @@ type MedicationInput = {
   requires_prescription: boolean;
   is_active?: boolean;
 };
-
-// Includes inactive ones so staff can re-enable
 export const fetchAllMedications = createServerFn({ method: "GET" }).handler(async () => {
   await requireStaffRole();
   const { data, error } = await supabaseAdmin.from("medications").select("*").order("name");
@@ -202,8 +200,6 @@ export const getAllUsers = createServerFn({ method: "GET" }).handler(async () =>
     roles: roleMap[p.id] ?? [],
   })) as ProfileWithRoles[];
 });
-
-// Prevents removing the last patient role or removing admin from yourself
 export const updateUserRole = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const adminUserId = await requireAdminRole();
   const { userId, role, action } = ctx.data as unknown as {
