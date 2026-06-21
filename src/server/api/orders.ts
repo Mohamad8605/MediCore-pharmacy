@@ -188,10 +188,18 @@ export const createOrderItems = createServerFn({ method: "POST" }).handler(async
     return;
   }
 
-  const { error: rpcError } = await supabaseAdmin.rpc("place_order_items", {
-    p_items: items,
-  });
-  if (rpcError) throw rpcError;
+  const { error: insertError } = await supabaseAdmin.from("order_items").insert(items);
+  if (insertError) throw insertError;
+
+  for (const item of items) {
+    const { error: decError } = await supabaseAdmin.rpc("decrement_stock", {
+      p_id: item.medication_id,
+      p_quantity: item.quantity,
+    });
+    if (decError) {
+      console.error(`Failed to decrement stock for ${item.medication_id}:`, decError.message);
+    }
+  }
 });
 
 export const checkMedicationStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
