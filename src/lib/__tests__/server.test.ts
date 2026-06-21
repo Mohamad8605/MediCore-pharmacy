@@ -66,23 +66,29 @@ describe("cancelOrder", () => {
     const chain3 = createMockChain();
     chain3.eq = vi.fn().mockResolvedValue({ error: null });
 
+    const chain4 = createMockChain();
+    chain4.single = vi.fn().mockResolvedValue({
+      data: { stock: 10 },
+      error: null,
+    });
+
+    const chain5 = createMockChain();
+    chain5.select = vi.fn().mockResolvedValue({
+      data: [{ stock: 12 }],
+      error: null,
+    });
+
     mockSupabase.from = vi
       .fn()
       .mockReturnValueOnce(chain1)
       .mockReturnValueOnce(chain2)
-      .mockReturnValueOnce(chain3);
-
-    const rpcMock = (mockSupabase.rpc as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      error: null,
-    });
+      .mockReturnValueOnce(chain3)
+      .mockReturnValueOnce(chain4)
+      .mockReturnValueOnce(chain5);
 
     const result = await cancelOrderFn({ data: "order-1" });
     expect(result).toBe(true);
-    expect(mockSupabase.from).toHaveBeenCalledTimes(3);
-    expect(rpcMock).toHaveBeenCalledWith("increment_stock", {
-      p_id: "med-1",
-      p_quantity: 2,
-    });
+    expect(mockSupabase.from).toHaveBeenCalledTimes(5);
   });
 
   it("throws when the order is not pending", async () => {

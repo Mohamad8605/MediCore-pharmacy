@@ -156,6 +156,51 @@ type OrderItemInput = Array<{
   unit_price: number;
 }>;
 
+async function decrementStockAtomic(id: string, quantity: number) {
+  const { data: med, error: fetchErr } = await supabaseAdmin
+    .from("medications")
+    .select("stock")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !med) throw new Error(`Medication ${id} not found`);
+  if (med.stock < quantity) throw new Error(`Insufficient stock for medication ${id}: ${med.stock} < ${quantity}`);
+
+  const newStock = med.stock - quantity;
+  const { data: updated, error: updateErr } = await supabaseAdmin
+    .from("medications")
+    .update({ stock: newStock })
+    .eq("id", id)
+    .eq("stock", med.stock)
+    .select();
+
+  if (updateErr) throw updateErr;
+  if (!updated || updated.length === 0)
+    throw new Error(`Race condition: stock changed for ${id}, please retry`);
+}
+
+async function incrementStockAtomic(id: string, quantity: number) {
+  const { data: med, error: fetchErr } = await supabaseAdmin
+    .from("medications")
+    .select("stock")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !med) throw new Error(`Medication ${id} not found`);
+
+  const newStock = med.stock + quantity;
+  const { data: updated, error: updateErr } = await supabaseAdmin
+    .from("medications")
+    .update({ stock: newStock })
+    .eq("id", id)
+    .eq("stock", med.stock)
+    .select();
+
+  if (updateErr) throw updateErr;
+  if (!updated || updated.length === 0)
+    throw new Error(`Race condition: stock changed for ${id}, please retry`);
+}
+
 export const createOrderItems = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const items = ctx.data as unknown as OrderItemInput;
   const userId = await requireAuthUserId();
@@ -177,13 +222,7 @@ export const createOrderItems = createServerFn({ method: "POST" }).handler(async
       saveDemoOrders();
     }
     for (const item of items) {
-      const { error: decError } = await supabaseAdmin.rpc("decrement_stock", {
-        p_id: item.medication_id,
-        p_quantity: item.quantity,
-      });
-      if (decError) {
-        console.error(`Failed to decrement stock for ${item.medication_id}:`, decError.message);
-      }
+      await decrementStockAtomic(item.medication_id, item.quantity);
     }
     return;
   }
@@ -192,13 +231,7 @@ export const createOrderItems = createServerFn({ method: "POST" }).handler(async
   if (insertError) throw insertError;
 
   for (const item of items) {
-    const { error: decError } = await supabaseAdmin.rpc("decrement_stock", {
-      p_id: item.medication_id,
-      p_quantity: item.quantity,
-    });
-    if (decError) {
-      console.error(`Failed to decrement stock for ${item.medication_id}:`, decError.message);
-    }
+    await decrementStockAtomic(item.medication_id, item.quantity);
   }
 });
 
@@ -336,13 +369,7 @@ export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx
     if (entry.order.status !== "pending") throw new Error("Only pending orders can be cancelled");
 
     for (const item of entry.items) {
-      const { error: incError } = await supabaseAdmin.rpc("increment_stock", {
-        p_id: item.medication_id,
-        p_quantity: item.quantity,
-      });
-      if (incError) {
-        console.error(`Failed to restore stock for ${item.medication_id}:`, incError.message);
-      }
+      await incrementStockAtomic(item.medication_id, item.quantity);
     }
 
     entry.order.status = "cancelled";
@@ -375,13 +402,7 @@ export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx
   if (error) throw error;
 
   for (const item of orderItems ?? []) {
-    const { error: incError } = await supabaseAdmin.rpc("increment_stock", {
-      p_id: item.medication_id,
-      p_quantity: item.quantity,
-    });
-    if (incError) {
-      console.error(`Failed to restore stock for ${item.medication_id}:`, incError.message);
-    }
+    await incrementStockAtomic(item.medication_id, item.quantity);
   }
 
   return true;
