@@ -21,7 +21,7 @@ export function CartStockSync() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [items, revalidateStock]);
 
   return null;
 }

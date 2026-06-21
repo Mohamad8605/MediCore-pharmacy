@@ -38,9 +38,7 @@ export const useCart = create<CartState>()(
         if (existing) {
           const prev = existing.quantity;
           const nextQty = Math.min(med.stock, prev + qty);
-          next = s.items.map((i) =>
-            i.medication.id === med.id ? { ...i, quantity: nextQty } : i,
-          );
+          next = s.items.map((i) => (i.medication.id === med.id ? { ...i, quantity: nextQty } : i));
         } else {
           const nextQty = Math.min(med.stock, qty);
           next = [...s.items, { medication: med, quantity: nextQty }];
@@ -56,9 +54,7 @@ export const useCart = create<CartState>()(
         if (!item) return;
         const next = Math.max(1, Math.min(item.medication.stock, qty));
         set({
-          items: s.items.map((i) =>
-            i.medication.id === id ? { ...i, quantity: next } : i,
-          ),
+          items: s.items.map((i) => (i.medication.id === id ? { ...i, quantity: next } : i)),
         });
       },
       revalidateStock: (stockMap) => {

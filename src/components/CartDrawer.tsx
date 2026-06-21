@@ -15,6 +15,9 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/lib/cart";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
+import { useStockStore } from "@/lib/stock-store";
+import { reserveStock, releaseStock } from "@/lib/order-service";
+import { toast } from "sonner";
 
 export function CartDrawer() {
   const items = useCart((s) => s.items);
@@ -30,6 +33,48 @@ export function CartDrawer() {
   const shipping = total < SHIPPING_THRESHOLD ? SHIPPING_FEE : 0;
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  const handleRemove = async (id: string) => {
+    const item = items.find((i) => i.medication.id === id);
+    if (!item) return;
+    try {
+      await releaseStock(id, item.quantity);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Could not release stock: ${msg}`);
+      return;
+    }
+    useStockStore.getState().refresh();
+    remove(id);
+  };
+
+  const handleDecrease = async (id: string) => {
+    const item = items.find((i) => i.medication.id === id);
+    if (!item) return;
+    try {
+      await releaseStock(id, 1);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Could not release stock: ${msg}`);
+      return;
+    }
+    useStockStore.getState().refresh();
+    setQty(id, item.quantity - 1);
+  };
+
+  const handleIncrease = async (id: string) => {
+    const item = items.find((i) => i.medication.id === id);
+    if (!item) return;
+    try {
+      await reserveStock(id, 1);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Could not reserve stock: ${msg}`);
+      return;
+    }
+    useStockStore.getState().refresh();
+    setQty(id, item.quantity + 1);
+  };
 
   const rxItems = items.filter((i) => i.medication.requires_prescription);
   const otcItems = items.filter((i) => !i.medication.requires_prescription);
@@ -69,8 +114,9 @@ export function CartDrawer() {
                 icon={<ShieldAlert className="h-3.5 w-3.5" />}
                 tone="destructive"
                 items={rxItems}
-                onQty={setQty}
-                onRemove={remove}
+                onRemove={handleRemove}
+                onDecrease={handleDecrease}
+                onIncrease={handleIncrease}
                 fp={fp}
               />
               <CartGroup
@@ -78,8 +124,9 @@ export function CartDrawer() {
                 icon={<BadgeCheck className="h-3.5 w-3.5" />}
                 tone="primary"
                 items={otcItems}
-                onQty={setQty}
-                onRemove={remove}
+                onRemove={handleRemove}
+                onDecrease={handleDecrease}
+                onIncrease={handleIncrease}
                 fp={fp}
               />
             </div>
@@ -139,16 +186,18 @@ function CartGroup({
   icon,
   tone,
   items,
-  onQty,
   onRemove,
+  onDecrease,
+  onIncrease,
   fp,
 }: {
   label: string;
   icon: React.ReactNode;
   tone: "destructive" | "primary";
   items: ReturnType<typeof useCart.getState>["items"];
-  onQty: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
+  onDecrease: (id: string) => void;
+  onIncrease: (id: string) => void;
   fp: (value: number) => string;
 }) {
   if (items.length === 0) return null;
@@ -183,7 +232,7 @@ function CartGroup({
               <div className="flex items-center gap-1 rounded-xl border bg-background">
                 <button
                   className="p-1.5 disabled:opacity-30"
-                  onClick={() => onQty(i.medication.id, i.quantity - 1)}
+                  onClick={() => onDecrease(i.medication.id)}
                   disabled={i.quantity <= 1}
                   aria-label="Decrease"
                 >
@@ -192,7 +241,7 @@ function CartGroup({
                 <span className="w-6 text-center text-sm tabular-nums">{i.quantity}</span>
                 <button
                   className="p-1.5 disabled:opacity-30"
-                  onClick={() => onQty(i.medication.id, i.quantity + 1)}
+                  onClick={() => onIncrease(i.medication.id)}
                   disabled={i.quantity >= i.medication.stock}
                   aria-label="Increase"
                 >

@@ -12,8 +12,7 @@ A modern online pharmacy platform built with **TanStack Start**, **React**, **Su
 | Database   | Supabase (PostgreSQL + RLS + Storage)      |
 | Auth       | Supabase Auth (email/password)             |
 | State      | Zustand (cart), React Context (auth/theme) |
-| Forms      | react-hook-form, zod                       |
-| Charts     | Recharts                                   |
+| Forms      | Zod                                        |
 | Deployment | Cloudflare (via Wrangler)                  |
 
 ## Architecture
@@ -169,16 +168,16 @@ The `SUPABASE_SERVICE_ROLE_KEY` is **not** the database password. To connect via
 
 ### Available Scripts
 
-| Command              | Description              |
-| -------------------- | ------------------------ |
-| `npm run dev`        | Start development server |
-| `npm run build`      | Production build         |
-| `npm run test`        | Run 37 unit tests (Vitest) |
-| `npm run test:watch` | Run tests in watch mode  |
-| `npm run preview`    | Preview production build |
-| `npm run lint`       | Run ESLint               |
-| `npm run format`     | Format with Prettier     |
-| `npx tsc --noEmit`   | TypeScript type check    |
+| Command              | Description                |
+| -------------------- | -------------------------- |
+| `npm run dev`        | Start development server   |
+| `npm run build`      | Production build           |
+| `npm run test`       | Run 37 unit tests (Vitest) |
+| `npm run test:watch` | Run tests in watch mode    |
+| `npm run preview`    | Preview production build   |
+| `npm run lint`       | Run ESLint                 |
+| `npm run format`     | Format with Prettier       |
+| `npx tsc --noEmit`   | TypeScript type check      |
 
 ## Deployment
 

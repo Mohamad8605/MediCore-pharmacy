@@ -1,13 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2, XCircle } from "lucide-react";
+import { Edit, Eye, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFormatPrice } from "@/hooks/use-format-price";
-import { fetchUserOrders, cancelOrder, deleteOrder } from "@/lib/order-service";
+import { useCart } from "@/lib/cart";
+import {
+  fetchUserOrders,
+  cancelOrder,
+  deleteOrder,
+  fetchOrderById,
+  getMedicationsByIds,
+} from "@/lib/order-service";
 import { Route as ParentRoute } from "@/routes/orders";
 
 type OrderSummary = {
@@ -21,6 +28,7 @@ type OrderSummary = {
 
 function OrdersPage() {
   const fp = useFormatPrice();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +43,52 @@ function OrdersPage() {
         setLoading(false);
       });
   }, []);
+
+  async function handleEdit(orderId: string) {
+    try {
+      const data = await fetchOrderById(orderId);
+      if (!data) {
+        toast.error("Order not found");
+        return;
+      }
+      const order = data as unknown as {
+        id: string;
+        order_items: Array<{
+          medication_id?: string;
+          quantity: number;
+          unit_price: number;
+          medications: { name: string } | null;
+        }>;
+      };
+      const medIds = order.order_items.map((it) => it.medication_id).filter(Boolean) as string[];
+      if (!medIds.length) {
+        toast.error("No items in order");
+        return;
+      }
+      const meds = await getMedicationsByIds(medIds);
+      const cart = useCart.getState();
+      cart.clear();
+      for (const item of order.order_items) {
+        const med = meds.find((m) => m.id === item.medication_id);
+        if (med) {
+          cart.add(
+            {
+              id: med.id,
+              name: med.name,
+              price: Number(med.price),
+              stock: med.stock,
+              image_url: med.image_url,
+              requires_prescription: med.requires_prescription,
+            },
+            item.quantity,
+          );
+        }
+      }
+      navigate({ to: "/checkout", search: { editOrderId: orderId } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not load order");
+    }
+  }
 
   async function handleCancel(orderId: string) {
     if (!confirm("Are you sure you want to cancel this order?")) return;
@@ -121,15 +175,21 @@ function OrdersPage() {
                     </Button>
                   </Link>
                   {o.status === "pending" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleCancel(o.id)}
-                    >
-                      <XCircle className="mr-1 h-4 w-4" />
-                      Cancel
-                    </Button>
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(o.id)}>
+                        <Edit className="mr-1 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleCancel(o.id)}
+                      >
+                        <XCircle className="mr-1 h-4 w-4" />
+                        Cancel
+                      </Button>
+                    </>
                   )}
                   {o.status === "cancelled" && (
                     <Button

@@ -2,15 +2,23 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, Clock, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Edit, Trash2, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
-import { fetchOrderById, getPrescriptionSignedUrl, cancelOrder, deleteOrder } from "@/lib/order-service";
+import { useCart } from "@/lib/cart";
+import {
+  fetchOrderById,
+  getPrescriptionSignedUrl,
+  cancelOrder,
+  deleteOrder,
+  getMedicationsByIds,
+} from "@/lib/order-service";
 
 type OrderItem = {
   quantity: number;
   unit_price: number;
+  medication_id?: string;
   medications: { name: string } | null;
 };
 
@@ -47,6 +55,36 @@ function OrderDetailPage() {
   const [cancelling, setCancelling] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const fp = useFormatPrice();
+
+  async function handleEdit() {
+    if (!order) return;
+    const medIds = order.order_items
+      .map((it) => (it as OrderItem & { medication_id?: string }).medication_id)
+      .filter(Boolean) as string[];
+    try {
+      const meds = await getMedicationsByIds(medIds);
+      const cart = useCart.getState();
+      cart.clear();
+      for (const item of order.order_items) {
+        const medId = (item as OrderItem & { medication_id?: string }).medication_id;
+        const med = meds.find((m) => m.id === medId);
+        if (med) {
+          const cartMed = {
+            id: med.id,
+            name: med.name,
+            price: Number(med.price),
+            stock: med.stock,
+            image_url: med.image_url,
+            requires_prescription: med.requires_prescription,
+          };
+          cart.add(cartMed, item.quantity);
+        }
+      }
+      navigate({ to: "/checkout", search: { editOrderId: order.id } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not load medications");
+    }
+  }
 
   async function handleCancel() {
     if (!confirm("Are you sure you want to cancel this order?")) return;
@@ -272,7 +310,11 @@ function OrderDetailPage() {
                   })}
                 </ol>
                 {order.status === "pending" && (
-                  <div className="mt-6 border-t pt-4">
+                  <div className="mt-6 border-t pt-4 space-y-2">
+                    <Button variant="default" className="w-full" onClick={handleEdit}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit order
+                    </Button>
                     <Button
                       variant="outline"
                       className="w-full text-destructive hover:text-destructive"

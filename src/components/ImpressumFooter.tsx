@@ -30,7 +30,15 @@ const defaultHours: HoursRecord = {
 };
 
 function formatHours(h: HoursRecord): string {
-  const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+  const days = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ] as const;
   const abbr = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const parts: string[] = [];
   let i = 0;
@@ -64,15 +72,18 @@ export function ImpressumFooter() {
       .then((settings) => {
         if (settings.pharmacy_hours) {
           try {
-            const h = typeof settings.pharmacy_hours === "string"
-              ? JSON.parse(settings.pharmacy_hours as string)
-              : settings.pharmacy_hours;
+            const h =
+              typeof settings.pharmacy_hours === "string"
+                ? JSON.parse(settings.pharmacy_hours as string)
+                : settings.pharmacy_hours;
             const merged: HoursRecord = { ...defaultHours };
             for (const day of Object.keys(defaultHours) as (keyof HoursRecord)[]) {
               if (h[day]) merged[day] = { ...merged[day], ...h[day] };
             }
             setHoursText(formatHours(merged));
-          } catch { /* keep default */ }
+          } catch {
+            /* keep default */
+          }
         }
       })
       .catch(() => {});

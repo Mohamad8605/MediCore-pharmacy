@@ -13,10 +13,17 @@ import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { SHIPPING_FEE, SHIPPING_THRESHOLD } from "@/lib/constants";
 import { fetchProfile } from "@/lib/profile-service";
-import { createOrder, createOrderItems, uploadPrescription, validateStock } from "@/lib/order-service";
+import {
+  createOrder,
+  createOrderItems,
+  updateOrder,
+  uploadPrescription,
+  validateStock,
+} from "@/lib/order-service";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Mohamad's MediCore Pharmacy GmbH online" }] }),
+  validateSearch: (search: Record<string, unknown>) => search as { editOrderId?: string },
   component: CheckoutPage,
 });
 
@@ -24,6 +31,7 @@ function CheckoutPage() {
   const { items, total, needsPrescription, clear } = useCart();
   const { user, loading: authLoading, isDemo } = useAuth();
   const navigate = useNavigate();
+  const { editOrderId } = Route.useSearch();
   const fp = useFormatPrice();
   const [method, setMethod] = useState<"pickup" | "delivery">("pickup");
   const [street, setStreet] = useState("");
@@ -36,8 +44,7 @@ function CheckoutPage() {
   const justPlaced = useRef(false);
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
-    if (!authLoading && items.length === 0 && !justPlaced.current)
-      navigate({ to: "/cart" });
+    if (!authLoading && items.length === 0 && !justPlaced.current) navigate({ to: "/cart" });
   }, [authLoading, user, items.length, navigate]);
 
   useEffect(() => {
@@ -67,48 +74,72 @@ function CheckoutPage() {
   async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    if (needsPrescription() && !file && !useDemoPrescription)
+    if (!editOrderId && needsPrescription() && !file && !useDemoPrescription)
       return toast.error("Upload your prescription");
     if (method === "delivery" && (!street || !city || !postcode))
       return toast.error("Fill in delivery address");
     setSubmitting(true);
     try {
       let prescriptionPath: string | null = null;
-      if (useDemoPrescription) {
+      if (editOrderId) {
+        // keep existing prescription
+      } else if (useDemoPrescription) {
         prescriptionPath = "demo/prescription.jpg";
       } else if (file) {
         const { path, error } = await uploadPrescription(file);
         if (error) throw new Error(error);
         prescriptionPath = path;
       }
-      await validateStock(
-        items.map((i) => ({
-          medication_id: i.medication.id,
-          quantity: i.quantity,
-        })),
-      );
 
-      const order = await createOrder({
-        total_price: grandTotal,
-        delivery_method: method,
-        street: method === "delivery" ? street : null,
-        city: method === "delivery" ? city : null,
-        postcode: method === "delivery" ? postcode : null,
-        notes: notes || null,
-        prescription_path: prescriptionPath,
-      });
-      await createOrderItems(
-        items.map((i) => ({
-          order_id: order.id,
-          medication_id: i.medication.id,
-          quantity: i.quantity,
-          unit_price: i.medication.price,
-        })),
-      );
-      justPlaced.current = true;
-      clear();
-      toast.success("Order placed!");
-      navigate({ to: "/orders/$id", params: { id: order.id } });
+      if (editOrderId) {
+        await updateOrder({
+          orderId: editOrderId,
+          items: items.map((i) => ({
+            medication_id: i.medication.id,
+            quantity: i.quantity,
+            unit_price: i.medication.price,
+          })),
+          total_price: grandTotal,
+          delivery_method: method,
+          street: method === "delivery" ? street : null,
+          city: method === "delivery" ? city : null,
+          postcode: method === "delivery" ? postcode : null,
+          notes: notes || null,
+        });
+        justPlaced.current = true;
+        clear();
+        toast.success("Order updated!");
+        navigate({ to: "/orders/$id", params: { id: editOrderId } });
+      } else {
+        await validateStock(
+          items.map((i) => ({
+            medication_id: i.medication.id,
+            quantity: i.quantity,
+          })),
+        );
+
+        const order = await createOrder({
+          total_price: grandTotal,
+          delivery_method: method,
+          street: method === "delivery" ? street : null,
+          city: method === "delivery" ? city : null,
+          postcode: method === "delivery" ? postcode : null,
+          notes: notes || null,
+          prescription_path: prescriptionPath,
+        });
+        await createOrderItems(
+          items.map((i) => ({
+            order_id: order.id,
+            medication_id: i.medication.id,
+            quantity: i.quantity,
+            unit_price: i.medication.price,
+          })),
+        );
+        justPlaced.current = true;
+        clear();
+        toast.success("Order placed!");
+        navigate({ to: "/orders/$id", params: { id: order.id } });
+      }
     } catch (err) {
       const message =
         err instanceof Error
@@ -127,7 +158,7 @@ function CheckoutPage() {
   if (!user) return null;
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">Checkout</h1>
+      <h1 className="text-3xl font-bold">{editOrderId ? "Edit order" : "Checkout"}</h1>
       <form onSubmit={placeOrder} className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card>
@@ -257,7 +288,13 @@ function CheckoutPage() {
               <span className="text-primary">{fp(grandTotal)}</span>
             </div>
             <Button type="submit" className="w-full mt-2" size="lg" disabled={submitting}>
-              {submitting ? "Placing…" : "Place order"}
+              {submitting
+                ? editOrderId
+                  ? "Updating…"
+                  : "Placing…"
+                : editOrderId
+                  ? "Update order"
+                  : "Place order"}
             </Button>
           </CardContent>
         </Card>

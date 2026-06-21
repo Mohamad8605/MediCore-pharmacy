@@ -102,8 +102,7 @@ export function MedicationsTab() {
       ]);
       setMeds(data as MedicationRow[]);
       const threshold = (settings as Record<string, unknown>).low_stock_threshold;
-      if (threshold !== undefined)
-        setLowStockThreshold(Number(threshold));
+      if (threshold !== undefined) setLowStockThreshold(Number(threshold));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load medications");
     }
@@ -204,7 +203,8 @@ export function MedicationsTab() {
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <p className="text-sm text-amber-800">
               <span className="font-semibold">{lowStockCount}</span> medication
-              {lowStockCount !== 1 ? "s" : ""} at or below the low-stock threshold ({lowStockThreshold}).
+              {lowStockCount !== 1 ? "s" : ""} at or below the low-stock threshold (
+              {lowStockThreshold}).
             </p>
           </CardContent>
         </Card>
@@ -411,7 +411,8 @@ export function MedicationsTab() {
                           {fp(Number(m.price))}
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Stock:</span> {stockMap[m.id] ?? m.stock}
+                          <span className="text-muted-foreground">Stock:</span>{" "}
+                          {stockMap[m.id] ?? m.stock}
                           {(stockMap[m.id] ?? m.stock) <= lowStockThreshold && (
                             <AlertTriangle className="ml-1 inline h-3.5 w-3.5 text-amber-500" />
                           )}

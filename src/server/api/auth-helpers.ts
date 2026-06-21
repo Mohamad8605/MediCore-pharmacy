@@ -36,7 +36,7 @@ export async function getAuthUserId(): Promise<string | null> {
       const uid = session?.user?.id;
       if (uid && typeof uid === "string") return uid;
     } catch {
-      // ignore parse errors
+      // bad token, skip
     }
   }
 

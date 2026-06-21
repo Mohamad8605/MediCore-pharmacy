@@ -264,10 +264,7 @@ export const getPublicSettings = createServerFn({ method: "GET" }).handler(async
     "free_shipping_minimum",
     "estimated_delivery_days",
   ];
-  const { data, error } = await supabaseAdmin
-    .from("app_settings")
-    .select("*")
-    .in("key", keys);
+  const { data, error } = await supabaseAdmin.from("app_settings").select("*").in("key", keys);
   if (error) throw error;
   const map: Record<string, Json> = {};
   for (const row of data ?? []) {

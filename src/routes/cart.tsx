@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ShoppingCart, Trash2, Minus, Plus, ArrowRight, AlertCircle } from "lucide-react";
 import { useFormatPrice } from "@/hooks/use-format-price";
+import { useStockStore } from "@/lib/stock-store";
+import { reserveStock, releaseStock } from "@/lib/order-service";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Mohamad's MediCore Pharmacy GmbH online" }] }),
@@ -18,6 +21,48 @@ function CartPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const fp = useFormatPrice();
+
+  const handleRemove = async (id: string) => {
+    const item = items.find((i) => i.medication.id === id);
+    if (!item) return;
+    try {
+      await releaseStock(id, item.quantity);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Could not release stock: ${msg}`);
+      return;
+    }
+    useStockStore.getState().refresh();
+    remove(id);
+  };
+
+  const handleDecrease = async (id: string) => {
+    const item = items.find((i) => i.medication.id === id);
+    if (!item) return;
+    try {
+      await releaseStock(id, 1);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Could not release stock: ${msg}`);
+      return;
+    }
+    useStockStore.getState().refresh();
+    setQuantity(id, item.quantity - 1);
+  };
+
+  const handleIncrease = async (id: string) => {
+    const item = items.find((i) => i.medication.id === id);
+    if (!item) return;
+    try {
+      await reserveStock(id, 1);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Could not reserve stock: ${msg}`);
+      return;
+    }
+    useStockStore.getState().refresh();
+    setQuantity(id, item.quantity + 1);
+  };
 
   if (items.length === 0) {
     return (
@@ -55,7 +100,7 @@ function CartPage() {
                   <Button
                     size="icon"
                     variant="outline"
-                    onClick={() => setQuantity(it.medication.id, it.quantity - 1)}
+                    onClick={() => handleDecrease(it.medication.id)}
                     disabled={it.quantity <= 1}
                     aria-label="Decrease quantity"
                   >
@@ -70,7 +115,7 @@ function CartPage() {
                   <Button
                     size="icon"
                     variant="outline"
-                    onClick={() => setQuantity(it.medication.id, it.quantity + 1)}
+                    onClick={() => handleIncrease(it.medication.id)}
                     disabled={it.quantity >= it.medication.stock}
                     aria-label="Increase quantity"
                   >
@@ -85,7 +130,7 @@ function CartPage() {
                     size="sm"
                     variant="ghost"
                     className="mt-1 text-destructive"
-                    onClick={() => remove(it.medication.id)}
+                    onClick={() => handleRemove(it.medication.id)}
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
                     Remove

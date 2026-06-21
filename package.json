@@ -13,8 +13,6 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "db:apply-images": "node scripts/apply-product-images.mjs",
-    "db:replace-images": "node scripts/replace-product-images.mjs",
     "postinstall": "node scripts/patch-tanstack.cjs"
   },
   "dependencies": {

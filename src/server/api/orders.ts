@@ -20,6 +20,91 @@ function fmtDemoOrderSummary(o: {
   };
 }
 
+export const reserveStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const { medicationId, quantity } = ctx.data as unknown as {
+    medicationId: string;
+    quantity: number;
+  };
+  const { data: med, error: readErr } = await supabaseAdmin
+    .from("medications")
+    .select("stock")
+    .eq("id", medicationId)
+    .single();
+
+  if (readErr) throw readErr;
+  if (!med) throw new Error("Medication not found");
+  if (med.stock < quantity)
+    throw new Error(`Insufficient stock: only ${med.stock} available, requested ${quantity}`);
+
+  const { error: updateErr } = await supabaseAdmin
+    .from("medications")
+    .update({ stock: med.stock - quantity })
+    .eq("id", medicationId)
+    .gte("stock", quantity);
+
+  if (updateErr) throw updateErr;
+});
+
+export const releaseStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const { medicationId, quantity } = ctx.data as unknown as {
+    medicationId: string;
+    quantity: number;
+  };
+  const { data: med, error: readErr } = await supabaseAdmin
+    .from("medications")
+    .select("stock")
+    .eq("id", medicationId)
+    .single();
+
+  if (readErr) throw readErr;
+  if (!med) throw new Error("Medication not found");
+
+  const { error: updateErr } = await supabaseAdmin
+    .from("medications")
+    .update({ stock: med.stock + quantity })
+    .eq("id", medicationId);
+
+  if (updateErr) throw updateErr;
+});
+
+type CheckAndReserveResult = {
+  error?: string;
+  remaining: number;
+};
+
+export const checkAndReserveStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const { medicationId, quantity } = ctx.data as unknown as {
+    medicationId: string;
+    quantity: number;
+  };
+  const { data: med, error: readErr } = await supabaseAdmin
+    .from("medications")
+    .select("id, stock, name")
+    .eq("id", medicationId)
+    .maybeSingle();
+
+  if (readErr) return { remaining: 0, error: "Database error" } satisfies CheckAndReserveResult;
+  if (!med) return { remaining: 0, error: "Medication not found" } satisfies CheckAndReserveResult;
+  if (med.stock <= 0)
+    return { remaining: 0, error: `${med.name} is out of stock` } satisfies CheckAndReserveResult;
+  if (med.stock < quantity)
+    return {
+      remaining: med.stock,
+      error: `Only ${med.stock} of "${med.name}" in stock`,
+    } satisfies CheckAndReserveResult;
+
+  const { error: updateErr } = await supabaseAdmin
+    .from("medications")
+    .update({ stock: med.stock - quantity })
+    .eq("id", medicationId)
+    .gte("stock", quantity);
+
+  if (updateErr)
+    return { remaining: 0, error: "Could not reserve stock" } satisfies CheckAndReserveResult;
+
+  return { remaining: med.stock - quantity } satisfies CheckAndReserveResult;
+});
+
 export const fetchUserOrders = createServerFn({ method: "GET" }).handler(async () => {
   const userId = await requireAuthUserId();
 
@@ -51,6 +136,7 @@ export const fetchOrderById = createServerFn({ method: "GET" }).handler(async (c
     return {
       ...entry.order,
       order_items: entry.items.map((i) => ({
+        medication_id: i.medication_id,
         quantity: i.quantity,
         unit_price: i.unit_price,
         medications: { name: i.medication_name },
@@ -60,7 +146,7 @@ export const fetchOrderById = createServerFn({ method: "GET" }).handler(async (c
 
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .select("*, order_items(quantity, unit_price, medications(name))")
+    .select("*, order_items(medication_id, quantity, unit_price, medications(name))")
     .eq("id", orderId)
     .maybeSingle();
 
@@ -100,7 +186,7 @@ export const createOrder = createServerFn({ method: "POST" }).handler(async (ctx
           if (m?.first_name) first = m.first_name;
           if (m?.last_name) last = m.last_name;
         } catch {
-          /* ignore parse errors */
+          // bad json, keep defaults
         }
       getDemoProfiles().set(userId, { id: userId, first_name: first, last_name: last });
       saveDemoProfiles();
@@ -156,51 +242,6 @@ type OrderItemInput = Array<{
   unit_price: number;
 }>;
 
-async function decrementStockAtomic(id: string, quantity: number) {
-  const { data: med, error: fetchErr } = await supabaseAdmin
-    .from("medications")
-    .select("stock")
-    .eq("id", id)
-    .single();
-
-  if (fetchErr || !med) throw new Error(`Medication ${id} not found`);
-  if (med.stock < quantity) throw new Error(`Insufficient stock for medication ${id}: ${med.stock} < ${quantity}`);
-
-  const newStock = med.stock - quantity;
-  const { data: updated, error: updateErr } = await supabaseAdmin
-    .from("medications")
-    .update({ stock: newStock })
-    .eq("id", id)
-    .eq("stock", med.stock)
-    .select();
-
-  if (updateErr) throw updateErr;
-  if (!updated || updated.length === 0)
-    throw new Error(`Race condition: stock changed for ${id}, please retry`);
-}
-
-async function incrementStockAtomic(id: string, quantity: number) {
-  const { data: med, error: fetchErr } = await supabaseAdmin
-    .from("medications")
-    .select("stock")
-    .eq("id", id)
-    .single();
-
-  if (fetchErr || !med) throw new Error(`Medication ${id} not found`);
-
-  const newStock = med.stock + quantity;
-  const { data: updated, error: updateErr } = await supabaseAdmin
-    .from("medications")
-    .update({ stock: newStock })
-    .eq("id", id)
-    .eq("stock", med.stock)
-    .select();
-
-  if (updateErr) throw updateErr;
-  if (!updated || updated.length === 0)
-    throw new Error(`Race condition: stock changed for ${id}, please retry`);
-}
-
 export const createOrderItems = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const items = ctx.data as unknown as OrderItemInput;
   const userId = await requireAuthUserId();
@@ -221,18 +262,11 @@ export const createOrderItems = createServerFn({ method: "POST" }).handler(async
       entry.items.push(...demoItems);
       saveDemoOrders();
     }
-    for (const item of items) {
-      await decrementStockAtomic(item.medication_id, item.quantity);
-    }
     return;
   }
 
   const { error: insertError } = await supabaseAdmin.from("order_items").insert(items);
   if (insertError) throw insertError;
-
-  for (const item of items) {
-    await decrementStockAtomic(item.medication_id, item.quantity);
-  }
 });
 
 export const checkMedicationStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
@@ -250,9 +284,17 @@ export const checkMedicationStock = createServerFn({ method: "GET" }).handler(as
 export const fetchMedicationStock = createServerFn({ method: "GET" }).handler(async (ctx) => {
   const ids = ctx.data as unknown as string[];
   if (!ids.length) return [];
+  const { data, error } = await supabaseAdmin.from("medications").select("id, stock").in("id", ids);
+  if (error) throw error;
+  return data ?? [];
+});
+
+export const getMedicationsByIds = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const ids = ctx.data as unknown as string[];
+  if (!ids.length) return [];
   const { data, error } = await supabaseAdmin
     .from("medications")
-    .select("id, stock")
+    .select("id, name, price, stock, image_url, requires_prescription")
     .in("id", ids);
   if (error) throw error;
   return data ?? [];
@@ -369,7 +411,17 @@ export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx
     if (entry.order.status !== "pending") throw new Error("Only pending orders can be cancelled");
 
     for (const item of entry.items) {
-      await incrementStockAtomic(item.medication_id, item.quantity);
+      const { data: med } = await supabaseAdmin
+        .from("medications")
+        .select("stock")
+        .eq("id", item.medication_id)
+        .single();
+      if (med) {
+        await supabaseAdmin
+          .from("medications")
+          .update({ stock: med.stock + item.quantity })
+          .eq("id", item.medication_id);
+      }
     }
 
     entry.order.status = "cancelled";
@@ -402,7 +454,17 @@ export const cancelOrder = createServerFn({ method: "POST" }).handler(async (ctx
   if (error) throw error;
 
   for (const item of orderItems ?? []) {
-    await incrementStockAtomic(item.medication_id, item.quantity);
+    const { data: med } = await supabaseAdmin
+      .from("medications")
+      .select("stock")
+      .eq("id", item.medication_id)
+      .single();
+    if (med) {
+      await supabaseAdmin
+        .from("medications")
+        .update({ stock: med.stock + item.quantity })
+        .eq("id", item.medication_id);
+    }
   }
 
   return true;
@@ -438,4 +500,151 @@ export const deleteOrder = createServerFn({ method: "POST" }).handler(async (ctx
   const { error } = await supabaseAdmin.from("orders").delete().eq("id", orderId);
   if (error) throw error;
   return true;
+});
+
+type UpdateOrderInput = {
+  orderId: string;
+  items: Array<{ medication_id: string; quantity: number; unit_price: number }>;
+  total_price: number;
+  delivery_method: "pickup" | "delivery";
+  street: string | null;
+  city: string | null;
+  postcode: string | null;
+  notes: string | null;
+};
+
+export const updateOrder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { orderId, items, total_price, delivery_method, street, city, postcode, notes } =
+    ctx.data as unknown as UpdateOrderInput;
+  const userId = await requireAuthUserId();
+
+  if (isDemoRequest()) {
+    const existing = getDemoOrders().get(userId) ?? [];
+    const entry = existing.find((e) => e.order.id === orderId);
+    if (!entry) throw new Error("Order not found");
+    if (entry.order.user_id !== userId) throw new Error("You can only edit your own orders");
+    if (entry.order.status !== "pending") throw new Error("Only pending orders can be edited");
+
+    const ids = items.map((i) => i.medication_id);
+    const { data: meds } = await supabaseAdmin.from("medications").select("id, name").in("id", ids);
+    const nameMap = Object.fromEntries((meds ?? []).map((m) => [m.id, m.name]));
+
+    entry.items = items.map((i) => ({
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+      medication_id: i.medication_id,
+      medication_name: nameMap[i.medication_id] ?? "Unknown",
+    }));
+    entry.order.total_price = total_price;
+    entry.order.delivery_method = delivery_method;
+    entry.order.street = street;
+    entry.order.city = city;
+    entry.order.postcode = postcode;
+    entry.order.notes = notes;
+    saveDemoOrders();
+    return;
+  }
+
+  const { data: order, error: fetchErr } = await supabaseAdmin
+    .from("orders")
+    .select("id, user_id, status")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (fetchErr || !order) throw new Error("Order not found");
+  if (order.user_id !== userId) throw new Error("You can only edit your own orders");
+  if (order.status !== "pending") throw new Error("Only pending orders can be edited");
+
+  const { data: oldItems, error: itemsErr } = await supabaseAdmin
+    .from("order_items")
+    .select("medication_id, quantity")
+    .eq("order_id", orderId);
+
+  if (itemsErr) throw itemsErr;
+
+  const newMap = new Map(items.map((i) => [i.medication_id, i.quantity]));
+  const oldMap = new Map((oldItems ?? []).map((i) => [i.medication_id, i.quantity]));
+
+  for (const [medId, newQty] of newMap) {
+    const oldQty = oldMap.get(medId) ?? 0;
+    const diff = newQty - oldQty;
+    if (diff > 0) {
+      const { data: med, error: readErr } = await supabaseAdmin
+        .from("medications")
+        .select("stock")
+        .eq("id", medId)
+        .single();
+      if (readErr) throw readErr;
+      if (!med || med.stock < diff) {
+        const item = items.find((i) => i.medication_id === medId);
+        throw new Error(
+          `Insufficient stock for "${item ? "item" : medId}": need ${diff} more, only ${med?.stock ?? 0} available`,
+        );
+      }
+      const { error: updateErr } = await supabaseAdmin
+        .from("medications")
+        .update({ stock: med.stock - diff })
+        .eq("id", medId)
+        .gte("stock", diff);
+      if (updateErr) throw updateErr;
+    } else if (diff < 0) {
+      const releaseQty = -diff;
+      const { data: med } = await supabaseAdmin
+        .from("medications")
+        .select("stock")
+        .eq("id", medId)
+        .single();
+      if (med) {
+        await supabaseAdmin
+          .from("medications")
+          .update({ stock: med.stock + releaseQty })
+          .eq("id", medId);
+      }
+    }
+  }
+
+  for (const [medId, oldQty] of oldMap) {
+    if (!newMap.has(medId)) {
+      const { data: med } = await supabaseAdmin
+        .from("medications")
+        .select("stock")
+        .eq("id", medId)
+        .single();
+      if (med) {
+        await supabaseAdmin
+          .from("medications")
+          .update({ stock: med.stock + oldQty })
+          .eq("id", medId);
+      }
+    }
+  }
+
+  const { error: deleteItemsErr } = await supabaseAdmin
+    .from("order_items")
+    .delete()
+    .eq("order_id", orderId);
+  if (deleteItemsErr) throw deleteItemsErr;
+
+  const newItems = items.map((i) => ({
+    order_id: orderId,
+    medication_id: i.medication_id,
+    quantity: i.quantity,
+    unit_price: i.unit_price,
+  }));
+  const { error: insertErr } = await supabaseAdmin.from("order_items").insert(newItems);
+  if (insertErr) throw insertErr;
+
+  const { error: updateErr } = await supabaseAdmin
+    .from("orders")
+    .update({
+      total_price,
+      delivery_method,
+      street,
+      city,
+      postcode,
+      notes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId);
+  if (updateErr) throw updateErr;
 });

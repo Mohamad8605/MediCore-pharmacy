@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { fetchMedicationStock } from "./order-service";
+import { useStockStore } from "./stock-store";
 
 export function useStockSync(ids: string[], intervalMs = 30_000) {
-  const [stockMap, setStockMap] = useState<Record<string, number>>({});
+  const epoch = useStockStore((s) => s.epoch);
+  const setMultiple = useStockStore((s) => s.setMultiple);
   const idsRef = useRef(ids);
   idsRef.current = ids;
 
@@ -19,8 +21,9 @@ export function useStockSync(ids: string[], intervalMs = 30_000) {
         for (const row of rows) {
           map[row.id] = row.stock;
         }
-        setStockMap(map);
+        setMultiple(map);
       } catch {
+        // network error — keep the last known stock values
       }
     };
 
@@ -37,7 +40,7 @@ export function useStockSync(ids: string[], intervalMs = 30_000) {
       clearInterval(id);
       window.removeEventListener("focus", onFocus);
     };
-  }, [intervalMs]);
+  }, [intervalMs, epoch, setMultiple]);
 
-  return stockMap;
+  return useStockStore((s) => s.stockMap);
 }

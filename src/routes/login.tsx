@@ -70,7 +70,7 @@ function LoginPage() {
             stableId = crypto.randomUUID();
             localStorage.setItem(storageKey, stableId);
           }
-          setDemoSession({ ...demo.user, id: stableId }, (demo.roles ?? []) as []);
+          setDemoSession({ ...demo.user, id: stableId }, (demo.roles ?? []) as Role[]);
           toast.success("Signed in (demo mode)");
           setTimeout(() => navigate({ to: "/" }), 0);
           return;

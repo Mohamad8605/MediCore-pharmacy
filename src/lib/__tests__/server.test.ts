@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { rpc: vi.fn() } as Record<string, unknown>,
+  supabaseAdmin: { from: vi.fn() } as Record<string, unknown>,
 }));
 
 vi.mock("@/server/api/auth-helpers", () => ({
@@ -67,16 +67,10 @@ describe("cancelOrder", () => {
     chain3.eq = vi.fn().mockResolvedValue({ error: null });
 
     const chain4 = createMockChain();
-    chain4.single = vi.fn().mockResolvedValue({
-      data: { stock: 10 },
-      error: null,
-    });
+    chain4.single = vi.fn().mockResolvedValue({ data: { stock: 10 }, error: null });
 
     const chain5 = createMockChain();
-    chain5.select = vi.fn().mockResolvedValue({
-      data: [{ stock: 12 }],
-      error: null,
-    });
+    chain5.eq = vi.fn().mockResolvedValue({ error: null });
 
     mockSupabase.from = vi
       .fn()

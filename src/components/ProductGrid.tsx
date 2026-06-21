@@ -61,63 +61,63 @@ export function ProductGrid() {
         {filtered.map((p) => {
           const remaining = stockMap[p.id] ?? p.stock;
           return (
-          <article
-            key={p.id}
-            className="group flex flex-col rounded-2xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-            <Link to="/medications/$id" params={{ id: p.id }} className="group">
-              <div className="mb-3 flex h-40 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-accent/10">
-                {p.image_url && !failedImages.has(p.id) ? (
-                  <img
-                    src={p.image_url}
-                    alt={p.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition group-hover:scale-105"
-                    onError={() => setFailedImages((prev) => new Set(prev).add(p.id))}
-                  />
-                ) : (
-                  <Pill className="h-14 w-14 text-primary/40" />
-                )}
-              </div>
-              <div className="mb-2 flex items-start justify-between gap-2">
-                {p.requires_prescription ? (
-                  <Badge variant="destructive" className="gap-1">
-                    <ShieldAlert className="h-3 w-3" />
-                    Prescription
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary">
-                    <BadgeCheck className="h-3 w-3" />
-                    Over the counter
-                  </Badge>
-                )}
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  {p.category}
-                </span>
-              </div>
+            <article
+              key={p.id}
+              className="group flex flex-col rounded-2xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <Link to="/medications/$id" params={{ id: p.id }} className="group">
+                <div className="mb-3 flex h-40 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-accent/10">
+                  {p.image_url && !failedImages.has(p.id) ? (
+                    <img
+                      src={p.image_url}
+                      alt={p.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      onError={() => setFailedImages((prev) => new Set(prev).add(p.id))}
+                    />
+                  ) : (
+                    <Pill className="h-14 w-14 text-primary/40" />
+                  )}
+                </div>
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  {p.requires_prescription ? (
+                    <Badge variant="destructive" className="gap-1">
+                      <ShieldAlert className="h-3 w-3" />
+                      Prescription
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary">
+                      <BadgeCheck className="h-3 w-3" />
+                      Over the counter
+                    </Badge>
+                  )}
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {p.category}
+                  </span>
+                </div>
 
-              <h3 className="font-semibold leading-snug group-hover:text-primary">{p.name}</h3>
-            </Link>
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                <h3 className="font-semibold leading-snug group-hover:text-primary">{p.name}</h3>
+              </Link>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
 
-            <div className="mt-4 flex items-end justify-between">
-              <div>
-                <p className="text-lg font-semibold tracking-tight">{fp(Number(p.price))}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  {remaining > 0 ? `${remaining} in stock` : "Out of stock"}
-                </p>
+              <div className="mt-4 flex items-end justify-between">
+                <div>
+                  <p className="text-lg font-semibold tracking-tight">{fp(Number(p.price))}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {remaining > 0 ? `${remaining} in stock` : "Out of stock"}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="gap-1.5 rounded-xl"
+                  disabled={remaining === 0}
+                  onClick={() => addToCartWithCheck(p, 1)}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Add
+                </Button>
               </div>
-              <Button
-                size="sm"
-                className="gap-1.5 rounded-xl"
-                disabled={remaining === 0}
-                onClick={() => addToCartWithCheck(p, 1)}
-              >
-                <ShoppingCart className="h-4 w-4" />
-                Add
-              </Button>
-            </div>
-          </article>
+            </article>
           );
         })}
       </div>

@@ -36,6 +36,10 @@ type AuthResult = {
   failure?: AuthFailure;
 };
 
+/**
+ * Register a new account and hook the session up on the client side.
+ * Returns either the user or an error string — the caller decides what to show.
+ */
 export async function signUp(
   email: string,
   password: string,
@@ -63,6 +67,11 @@ export async function signUp(
   return { user: result.user };
 }
 
+/**
+ * Email + password sign in. If something goes wrong (wrong password,
+ * email not confirmed, account doesn't exist) you get back a typed failure
+ * instead of a generic error — makes showing the right UI message easier.
+ */
 export async function signIn(
   email: string,
   password: string,
@@ -91,18 +100,32 @@ type DemoSignInResult = {
   demo?: boolean;
 };
 
+/**
+ * Quick demo login — bypasses Supabase entirely and uses a local JSON file
+ * so the assessor can jump straight in without registering. Three accounts:
+ * admin, pharmacist, patient.
+ */
 export async function demoSignIn(email: string, password: string): Promise<DemoSignInResult> {
   return await sfn<{ email: string; password: string }, DemoSignInResult>(serverDemoSignIn)({
     data: { email, password },
   });
 }
 
+/**
+ * Some users register and never check their inbox. This lets them
+ * request another verification email without signing up again.
+ */
 export async function resendVerification(email: string): Promise<{ error?: string }> {
   return await sfn<string, { error?: string }>(serverResendVerification)({
     data: email,
   });
 }
 
+/**
+ * What can this user do? Calls the server to find out their roles.
+ * On failure (network down, whatever) just returns an empty list
+ * rather than crashing the whole page.
+ */
 export async function getUserRoles(): Promise<string[]> {
   try {
     return await sfn<void, string[]>(serverGetUserRoles as unknown as ServerFn<void, string[]>)({
@@ -113,12 +136,20 @@ export async function getUserRoles(): Promise<string[]> {
   }
 }
 
+/**
+ * Forgotten password flow — triggers a reset link email through Supabase.
+ * The link takes the user to the Supabase-hosted reset page.
+ */
 export async function sendPasswordReset(email: string): Promise<{ error?: string }> {
   return await sfn<string, { error?: string }>(serverSendPasswordReset)({
     data: email,
   });
 }
 
+/**
+ * Change the email on the user's account. Only works when the user
+ * is already logged in — the server checks the session token.
+ */
 export async function updateEmail(newEmail: string): Promise<{ error?: string }> {
   return await sfn<string, { error?: string }>(serverUpdateEmail)({
     data: newEmail,
@@ -128,6 +159,11 @@ export async function updateEmail(newEmail: string): Promise<{ error?: string }>
 const CACHE_TTL_MS = 60_000;
 let _cachedConfirmationSetting: { value: boolean; expiresAt: number } | null = null;
 
+/**
+ * The admin can toggle whether new users must confirm their email.
+ * This reads that setting and caches it for a minute so we don't
+ * hammer the server on every page load.
+ */
 export async function isEmailConfirmationRequired(): Promise<boolean> {
   if (_cachedConfirmationSetting && Date.now() < _cachedConfirmationSetting.expiresAt) {
     return _cachedConfirmationSetting.value;

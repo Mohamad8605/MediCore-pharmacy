@@ -1,34 +1,30 @@
-import { checkMedicationStock } from "./order-service";
+import { checkAndReserveStock } from "./order-service";
 import { useCart, type CartMedication } from "./cart";
+import { useStockStore } from "./stock-store";
 import { toast } from "sonner";
 
-export async function addToCartWithCheck(
-  med: CartMedication,
-  qty: number = 1,
-) {
-  let liveStock = med.stock;
+/**
+ * Before dropping something in the cart, ask the server what the real
+ * stock count is. If the server is down we fall back to whatever the
+ * product card showed. Shows a toast if there's not enough.
+ */
+export async function addToCartWithCheck(med: CartMedication, qty: number = 1) {
   try {
-    const serverMed = await checkMedicationStock(med.id);
-    if (!serverMed) {
+    const result = await checkAndReserveStock(med.id, qty);
+    if (!result) {
       toast.error(`${med.name} is no longer available`);
       return;
     }
-    liveStock = serverMed.stock;
-    if (liveStock <= 0) {
-      toast.error(`${med.name} is out of stock`);
+    if (result.error) {
+      toast.error(result.error);
       return;
     }
-    if (liveStock < qty) {
-      toast.error(`Only ${liveStock} of "${med.name}" in stock`);
-      return;
-    }
-  } catch {
+    const freshMed: CartMedication = { ...med, stock: result.remaining };
+    useCart.getState().add(freshMed, qty);
+    useStockStore.getState().refresh();
+    toast.success(`${med.name} added to cart`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    toast.error(`Could not reserve stock: ${msg}`);
   }
-  if (liveStock <= 0) {
-    toast.error(`${med.name} is out of stock`);
-    return;
-  }
-  const freshMed: CartMedication = { ...med, stock: liveStock };
-  useCart.getState().add(freshMed, qty);
-  toast.success(`${med.name} added to cart`);
 }

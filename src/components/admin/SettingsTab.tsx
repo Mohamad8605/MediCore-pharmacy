@@ -78,32 +78,39 @@ export function SettingsTab() {
   useEffect(() => {
     Promise.all([
       getConfirmationSetting()
-        .then((v) => { setRequireConfirmation(v); setConfirmationLoaded(true); })
+        .then((v) => {
+          setRequireConfirmation(v);
+          setConfirmationLoaded(true);
+        })
         .catch(() => setConfirmationLoaded(true)),
-      getAllSettings().then((settings) => {
-        if (settings.low_stock_threshold !== undefined)
-          setLowStockThreshold(Number(settings.low_stock_threshold));
-        if (settings.delivery_fee !== undefined)
-          setDeliveryFee(Number(settings.delivery_fee));
-        if (settings.free_shipping_minimum !== undefined)
-          setFreeShippingMin(Number(settings.free_shipping_minimum));
-        if (settings.estimated_delivery_days !== undefined)
-          setEstimatedDays(Number(settings.estimated_delivery_days));
-        if (settings.announcement_enabled !== undefined)
-          setAnnouncementEnabled(Boolean(settings.announcement_enabled));
-        if (settings.announcement_message !== undefined)
-          setAnnouncementMessage(String(settings.announcement_message));
-        if (settings.announcement_type !== undefined)
-          setAnnouncementType(String(settings.announcement_type));
-        if (settings.pharmacy_hours !== undefined) {
-          try {
-            const h = typeof settings.pharmacy_hours === "string"
-              ? JSON.parse(settings.pharmacy_hours as string)
-              : settings.pharmacy_hours;
-            setHours({ ...defaultHours, ...h });
-          } catch { /* use defaults */ }
-        }
-      }).catch(() => {}),
+      getAllSettings()
+        .then((settings) => {
+          if (settings.low_stock_threshold !== undefined)
+            setLowStockThreshold(Number(settings.low_stock_threshold));
+          if (settings.delivery_fee !== undefined) setDeliveryFee(Number(settings.delivery_fee));
+          if (settings.free_shipping_minimum !== undefined)
+            setFreeShippingMin(Number(settings.free_shipping_minimum));
+          if (settings.estimated_delivery_days !== undefined)
+            setEstimatedDays(Number(settings.estimated_delivery_days));
+          if (settings.announcement_enabled !== undefined)
+            setAnnouncementEnabled(Boolean(settings.announcement_enabled));
+          if (settings.announcement_message !== undefined)
+            setAnnouncementMessage(String(settings.announcement_message));
+          if (settings.announcement_type !== undefined)
+            setAnnouncementType(String(settings.announcement_type));
+          if (settings.pharmacy_hours !== undefined) {
+            try {
+              const h =
+                typeof settings.pharmacy_hours === "string"
+                  ? JSON.parse(settings.pharmacy_hours as string)
+                  : settings.pharmacy_hours;
+              setHours({ ...defaultHours, ...h });
+            } catch {
+              /* use defaults */
+            }
+          }
+        })
+        .catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -152,7 +159,9 @@ export function SettingsTab() {
       <div className="space-y-6">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
-            <CardHeader><CardTitle>&nbsp;</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>&nbsp;</CardTitle>
+            </CardHeader>
             <CardContent className="h-20" />
           </Card>
         ))}
@@ -162,7 +171,6 @@ export function SettingsTab() {
 
   return (
     <div className="space-y-6">
-
       <Card>
         <CardHeader>
           <CardTitle>Authentication settings</CardTitle>
@@ -205,7 +213,8 @@ export function SettingsTab() {
                 Minimum stock threshold
               </Label>
               <p className="text-sm text-muted-foreground">
-                Medications with stock at or below this number get a low-stock warning in the medications view.
+                Medications with stock at or below this number get a low-stock warning in the
+                medications view.
               </p>
             </div>
             <Input
@@ -241,9 +250,7 @@ export function SettingsTab() {
               <Label htmlFor="delivery-fee" className="text-base font-medium">
                 Delivery fee (EUR)
               </Label>
-              <p className="text-sm text-muted-foreground">
-                Flat rate charged per order.
-              </p>
+              <p className="text-sm text-muted-foreground">Flat rate charged per order.</p>
             </div>
             <Input
               id="delivery-fee"
@@ -360,11 +367,7 @@ export function SettingsTab() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Opening hours</CardTitle>
-          <Button
-            size="sm"
-            onClick={saveHours}
-            disabled={savingKey === "pharmacy_hours"}
-          >
+          <Button size="sm" onClick={saveHours} disabled={savingKey === "pharmacy_hours"}>
             {savingKey === "pharmacy_hours" ? "Saving…" : "Save hours"}
           </Button>
         </CardHeader>
