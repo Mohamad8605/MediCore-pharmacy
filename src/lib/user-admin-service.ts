@@ -11,10 +11,16 @@ type UserRoleInput = {
   action: "add" | "remove";
 };
 
+/**
+ * Returns every registered user with their roles. Admin-only.
+ */
 export async function getAllUsers() {
   return await (serverGetAllUsers as unknown as () => Promise<Record<string, unknown>[]>)();
 }
 
+/**
+ * Grant or revoke a role. The server rejects self-demotion.
+ */
 export async function updateUserRole(
   userId: string,
   role: "admin" | "pharmacist" | "patient",

@@ -7,6 +7,11 @@ function toError(err: unknown): Error {
   return new Error(String(err));
 }
 
+/**
+ * Lower stock by a given amount. Uses .gte("stock", quantity) to
+ * prevent overselling if someone else bought the last unit between
+ * the read and the write.
+ */
 export async function reserveStockRPC(medicationId: string, quantity: number) {
   const { data: med, error: readErr } = await supabase
     .from("medications")
@@ -29,6 +34,12 @@ export async function reserveStockRPC(medicationId: string, quantity: number) {
   if (updateErr) throw toError(updateErr);
 }
 
+/**
+ * The reverse of reserveStockRPC — adds stock back when someone
+ * removes an item from their cart or an order gets cancelled.
+ * No upper-bound check here because stock shouldn't really have
+ * a maximum (we can always order more from the supplier).
+ */
 export async function releaseStockRPC(medicationId: string, quantity: number) {
   const { data: med, error: readErr } = await supabase
     .from("medications")

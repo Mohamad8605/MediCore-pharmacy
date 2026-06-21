@@ -75,6 +75,13 @@ const fallbackLanguageContext: LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue>(fallbackLanguageContext);
 
+/**
+ * Provides the current language and a translate function (t()) to
+ * every component beneath it. On first load checks localStorage
+ * for a saved preference, then falls back to the browser's accept-
+ * language header. Translations are in a plain object — no i18n
+ * library needed for two languages.
+ */
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>("en");
 
@@ -111,6 +118,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Shortcut to grab the language context — returns { lang, setLang, t }.
+ */
 export function useLanguage() {
   return useContext(LanguageContext);
 }

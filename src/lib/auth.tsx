@@ -41,6 +41,11 @@ function clearDemoSession() {
   localStorage.removeItem(DEMO_STORAGE_KEY);
 }
 
+/**
+ * Tracks the current user, session, and roles across the app.
+ * Listens to Supabase auth state changes and handles demo sessions
+ * via a localStorage-backed custom event mechanism.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -126,16 +131,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Save a demo session (user + roles) to localStorage and notify
+ * the AuthProvider via a custom event.
+ */
 export function setDemoSession(user: User, roles: Role[]) {
   saveDemoSession({ user, roles });
   window.dispatchEvent(new CustomEvent("demo-session-changed"));
 }
 
+/**
+ * Remove the demo session from localStorage so the old demo user
+ * doesn't reappear on the next page load.
+ */
 export function clearDemoSessionGlobal() {
   localStorage.removeItem(DEMO_STORAGE_KEY);
   window.dispatchEvent(new CustomEvent("demo-session-changed"));
 }
 
+/**
+ * Access the auth context from anywhere in the component tree.
+ * Throws if used outside AuthProvider.
+ */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");

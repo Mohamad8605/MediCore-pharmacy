@@ -33,6 +33,7 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const { editOrderId } = Route.useSearch();
   const fp = useFormatPrice();
+  // console.log("editOrderId from search:", editOrderId);
   const [method, setMethod] = useState<"pickup" | "delivery">("pickup");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");

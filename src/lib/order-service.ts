@@ -19,6 +19,8 @@ import {
 } from "@/server/api/orders";
 
 type ServerFn<TInput, TOutput> = (args: { data: TInput }) => Promise<TOutput>;
+// TODO: add cursor-based pagination to fetchUserOrders — the admin
+// dashboard loads all orders at once which gets slow past ~200 rows.
 
 type OrderInput = {
   total_price: number;

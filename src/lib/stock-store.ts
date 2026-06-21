@@ -7,6 +7,11 @@ interface StockState {
   refresh: () => void;
 }
 
+/**
+ * Holds the latest stock numbers. Separate from the cart store
+ * because stock updates on a timer and comes from a different endpoint.
+ * Bumping the epoch triggers useStockSync to re-fetch.
+ */
 export const useStockStore = create<StockState>((set) => ({
   stockMap: {},
   epoch: 0,

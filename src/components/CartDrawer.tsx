@@ -34,6 +34,8 @@ export function CartDrawer() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
+  // TODO: extract the repeated try/catch pattern into a helper, the
+  // three handlers are nearly identical except for which API they call.
   const handleRemove = async (id: string) => {
     const item = items.find((i) => i.medication.id === id);
     if (!item) return;

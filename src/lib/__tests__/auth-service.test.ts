@@ -7,53 +7,53 @@ function makeAuthError(message: string, status?: number): AuthError {
 }
 
 describe("categorizeAuthError", () => {
-  it("returns email_not_confirmed when message includes 'email not confirmed'", () => {
+  it("flags unconfirmed email attempts", () => {
     const result = categorizeAuthError(makeAuthError("email not confirmed"), "a@b.com");
     expect(result.kind).toBe("email_not_confirmed");
   });
 
-  it("returns email_not_confirmed when message includes 'email not verified'", () => {
+  it("also catches 'email not verified' messages", () => {
     const result = categorizeAuthError(makeAuthError("email not verified"), "a@b.com");
     expect(result.kind).toBe("email_not_confirmed");
   });
 
-  it("returns invalid_password when message includes 'invalid login credentials'", () => {
+  it("detects wrong password from login credentials error", () => {
     const result = categorizeAuthError(makeAuthError("invalid login credentials"), "a@b.com");
     expect(result.kind).toBe("invalid_password");
   });
 
-  it("returns rate_limited when message includes 'rate limit'", () => {
+  it("recognizes rate limit messages", () => {
     const result = categorizeAuthError(makeAuthError("rate limit exceeded"));
     expect(result.kind).toBe("rate_limited");
   });
 
-  it("returns rate_limited when status is 429", () => {
+  it("handles 429 status code as rate limited", () => {
     const result = categorizeAuthError(makeAuthError("Too many requests", 429));
     expect(result.kind).toBe("rate_limited");
   });
 
-  it("returns suspended when message includes 'suspended'", () => {
+  it("marks accounts mentioned as suspended", () => {
     const result = categorizeAuthError(makeAuthError("account suspended"));
     expect(result.kind).toBe("suspended");
   });
 
-  it("returns suspended when message includes 'disabled'", () => {
+  it("treats disabled accounts as suspended", () => {
     const result = categorizeAuthError(makeAuthError("account disabled"));
     expect(result.kind).toBe("suspended");
   });
 
-  it("returns suspended when message includes 'locked'", () => {
+  it("treats locked accounts as suspended", () => {
     const result = categorizeAuthError(makeAuthError("account locked"));
     expect(result.kind).toBe("suspended");
   });
 
-  it("returns unknown for unrecognized error", () => {
+  it("falls back to 'unknown' for unexpected errors", () => {
     const result = categorizeAuthError(makeAuthError("some random error"));
     expect(result.kind).toBe("unknown");
     expect(result.message).toBe("some random error");
   });
 
-  it("returns user-facing message for known failures", () => {
+  it("gives a clear message for known failure types", () => {
     const result = categorizeAuthError(makeAuthError("invalid login credentials"));
     expect(result.message).toContain("Incorrect email or password");
   });

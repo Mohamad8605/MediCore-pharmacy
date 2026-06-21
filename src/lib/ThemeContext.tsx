@@ -16,6 +16,11 @@ const fallbackThemeContext: ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue>(fallbackThemeContext);
 
+/**
+ * Light/dark theme context. Persists to localStorage and reads the
+ * system preference via prefers-color-scheme on first visit.
+ * Styling toggles a "dark" class on <html>, which Tailwind picks up.
+ */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
 
@@ -52,6 +57,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Access the theme context — current theme, setter, and toggle.
+ */
 export function useTheme() {
   return useContext(ThemeContext);
 }

@@ -27,6 +27,14 @@ interface CartState {
   needsPrescription: () => boolean;
 }
 
+/**
+ * Shopping cart persisted to localStorage so it survives page reloads.
+ * Handles adding/removing items, updating quantities, computing totals,
+ * and flagging prescription items so checkout knows to ask for a file.
+ */
+// TODO: the cart doesn't handle the case where stock goes to zero
+// while the user is browsing — revalidateStock runs but there's no
+// notification to the user that an item was removed automatically.
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({

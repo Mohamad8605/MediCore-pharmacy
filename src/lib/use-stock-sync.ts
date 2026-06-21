@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react";
 import { fetchMedicationStock } from "./order-service";
 import { useStockStore } from "./stock-store";
 
+/**
+ * Polls the server every 30 seconds to keep stock counts up to date.
+ * Also re-fetches when the browser tab regains focus.
+ */
 export function useStockSync(ids: string[], intervalMs = 30_000) {
   const epoch = useStockStore((s) => s.epoch);
   const setMultiple = useStockStore((s) => s.setMultiple);

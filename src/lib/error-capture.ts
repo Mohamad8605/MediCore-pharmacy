@@ -12,6 +12,11 @@ if (typeof globalThis.addEventListener === "function") {
   );
 }
 
+/**
+ * Grab whatever error was caught last (if not yet expired) and
+ * clear it out. The SSR error boundary calls this to decide whether
+ * to show a fallback page. TTL is 5 seconds so stale errors don't linger.
+ */
 export function consumeLastCapturedError(): unknown {
   if (!lastCapturedError) return undefined;
   if (Date.now() - lastCapturedError.at > TTL_MS) {

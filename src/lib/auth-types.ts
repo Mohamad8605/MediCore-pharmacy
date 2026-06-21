@@ -13,6 +13,11 @@ export interface AuthFailure {
   logMessage: string;
 }
 
+/**
+ * Translate a Supabase auth error into a UI-friendly failure object.
+ * Checks message text for known patterns rather than relying on error
+ * codes, since Supabase changes those between versions.
+ */
 export function categorizeAuthError(error: AuthError, email?: string): AuthFailure {
   const msg = error.message?.toLowerCase() ?? "";
   const status = (error as { status?: number }).status;

@@ -1,3 +1,7 @@
+/**
+ * Fallback HTML page for SSR render errors — inline-styled, with a
+ * "Try again" button and a link back to the homepage.
+ */
 export function renderErrorPage(): string {
   return `<!doctype html>
 <html lang="en">
