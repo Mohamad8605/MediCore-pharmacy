@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireAuthUserId, requireStaffRole, requireAdminRole } from "./auth-helpers";
 import { getDemoOrders, getDemoProfiles, saveDemoOrders } from "./demo-store";
 import { DEMO_USERS } from "./demo-auth";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 const STATUSES = [
   "pending",
@@ -232,4 +232,46 @@ export const updateUserRole = createServerFn({ method: "POST" }).handler(async (
       .eq("role", role);
     if (error) throw error;
   }
+});
+
+export const getAllSettings = createServerFn({ method: "GET" }).handler(async () => {
+  await requireStaffRole();
+  const { data, error } = await supabaseAdmin.from("app_settings").select("*");
+  if (error) throw error;
+  const map: Record<string, Json> = {};
+  for (const row of data ?? []) {
+    map[row.key] = row.value as Json;
+  }
+  return map;
+});
+
+export const updateSetting = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  await requireStaffRole();
+  const { key, value } = ctx.data as unknown as { key: string; value: Json };
+  const { error } = await supabaseAdmin
+    .from("app_settings")
+    .upsert({ key, value: value as never }, { onConflict: "key" });
+  if (error) throw error;
+});
+
+export const getPublicSettings = createServerFn({ method: "GET" }).handler(async () => {
+  const keys = [
+    "pharmacy_hours",
+    "announcement_enabled",
+    "announcement_message",
+    "announcement_type",
+    "delivery_fee",
+    "free_shipping_minimum",
+    "estimated_delivery_days",
+  ];
+  const { data, error } = await supabaseAdmin
+    .from("app_settings")
+    .select("*")
+    .in("key", keys);
+  if (error) throw error;
+  const map: Record<string, Json> = {};
+  for (const row of data ?? []) {
+    map[row.key] = row.value as Json;
+  }
+  return map;
 });

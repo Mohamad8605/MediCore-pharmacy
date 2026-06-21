@@ -283,12 +283,6 @@ export type Database = {
         };
         Returns: number;
       };
-      place_order_items: {
-        Args: {
-          p_items: unknown;
-        };
-        Returns: void;
-      };
     };
     Enums: {
       app_role: "admin" | "pharmacist" | "patient";

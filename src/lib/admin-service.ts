@@ -1,3 +1,4 @@
+import type { Json } from "@/integrations/supabase/types";
 import {
   loadOrders as serverLoadOrders,
   updateOrderStatus as serverUpdateOrderStatus,
@@ -6,6 +7,9 @@ import {
   fetchAllMedications as serverFetchAllMedications,
   createMedication as serverCreateMedication,
   updateMedication as serverUpdateMedication,
+  getAllSettings as serverGetAllSettings,
+  updateSetting as serverUpdateSetting,
+  getPublicSettings as serverGetPublicSettings,
 } from "@/server/api/admin";
 
 type ServerFn<TInput, TOutput> = (args: { data: TInput }) => Promise<TOutput>;
@@ -54,4 +58,18 @@ export async function updateMedication(id: string, data: Record<string, unknown>
   )({
     data: { id, ...data },
   });
+}
+
+export async function getAllSettings(): Promise<Record<string, Json>> {
+  return await (serverGetAllSettings as unknown as () => Promise<Record<string, Json>>)();
+}
+
+export async function updateSetting(key: string, value: Json) {
+  return await (
+    serverUpdateSetting as unknown as ServerFn<{ key: string; value: Json }, void>
+  )({ data: { key, value } });
+}
+
+export async function getPublicSettings(): Promise<Record<string, Json>> {
+  return await (serverGetPublicSettings as unknown as () => Promise<Record<string, Json>>)();
 }

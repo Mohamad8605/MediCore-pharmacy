@@ -18,6 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ResponsivePreviewProvider } from "@/components/ResponsivePreview";
 import { CartStockSync } from "@/components/CartStockSync";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 
 function NotFoundComponent() {
   return (
@@ -139,6 +140,7 @@ function RootComponent() {
             <ResponsivePreviewProvider>
               <div className="flex min-h-screen flex-col">
                 <CartStockSync />
+                <AnnouncementBanner />
                 <Navbar />
                 <main className="flex-1">
                   <Outlet />

@@ -21,11 +21,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pill, Search, RefreshCw } from "lucide-react";
+import { Plus, Pill, Search, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { useStockSync } from "@/lib/use-stock-sync";
-import { fetchAllMedications, createMedication, updateMedication } from "@/lib/admin-service";
+import {
+  fetchAllMedications,
+  createMedication,
+  updateMedication,
+  getAllSettings,
+} from "@/lib/admin-service";
 import { Textarea } from "@/components/ui/textarea";
 
 type MedicationRow = {
@@ -86,12 +91,19 @@ export function MedicationsTab() {
   const fp = useFormatPrice();
   const ids = meds.map((m) => m.id);
   const stockMap = useStockSync(ids);
+  const [lowStockThreshold, setLowStockThreshold] = useState(10);
 
   async function load() {
     setLoading(true);
     try {
-      const data = await fetchAllMedications();
+      const [data, settings] = await Promise.all([
+        fetchAllMedications(),
+        getAllSettings().catch(() => ({}) as Record<string, unknown>),
+      ]);
       setMeds(data as MedicationRow[]);
+      const threshold = (settings as Record<string, unknown>).low_stock_threshold;
+      if (threshold !== undefined)
+        setLowStockThreshold(Number(threshold));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load medications");
     }
@@ -180,8 +192,23 @@ export function MedicationsTab() {
     );
   }
 
+  const lowStockCount = filtered.filter(
+    (m) => (stockMap[m.id] ?? m.stock) <= lowStockThreshold,
+  ).length;
+
   return (
     <div className="space-y-4">
+      {lowStockCount > 0 && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="flex items-center gap-3 p-4">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <p className="text-sm text-amber-800">
+              <span className="font-semibold">{lowStockCount}</span> medication
+              {lowStockCount !== 1 ? "s" : ""} at or below the low-stock threshold ({lowStockThreshold}).
+            </p>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle>All medications ({meds.length})</CardTitle>
@@ -385,6 +412,9 @@ export function MedicationsTab() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">Stock:</span> {stockMap[m.id] ?? m.stock}
+                          {(stockMap[m.id] ?? m.stock) <= lowStockThreshold && (
+                            <AlertTriangle className="ml-1 inline h-3.5 w-3.5 text-amber-500" />
+                          )}
                         </div>
                         <div>
                           <Badge variant={m.is_active ? "default" : "secondary"}>
@@ -482,6 +512,9 @@ export function MedicationsTab() {
                       ) : (
                         <span className="inline-flex items-center gap-1">
                           {stockMap[m.id] ?? m.stock}
+                          {(stockMap[m.id] ?? m.stock) <= lowStockThreshold && (
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                          )}
                           {stockMap[m.id] !== undefined && stockMap[m.id] !== m.stock && (
                             <RefreshCw className="h-3 w-3 text-muted-foreground/50" />
                           )}

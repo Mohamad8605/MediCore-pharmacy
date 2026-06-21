@@ -1,7 +1,83 @@
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Pill, Phone, Mail, MapPin, ShieldCheck, Truck } from "lucide-react";
+import { getPublicSettings } from "@/lib/admin-service";
+
+type DayHours = {
+  open: string;
+  close: string;
+  closed: boolean;
+};
+
+type HoursRecord = {
+  monday: DayHours;
+  tuesday: DayHours;
+  wednesday: DayHours;
+  thursday: DayHours;
+  friday: DayHours;
+  saturday: DayHours;
+  sunday: DayHours;
+};
+
+const defaultHours: HoursRecord = {
+  monday: { open: "08:00", close: "20:00", closed: false },
+  tuesday: { open: "08:00", close: "20:00", closed: false },
+  wednesday: { open: "08:00", close: "20:00", closed: false },
+  thursday: { open: "08:00", close: "20:00", closed: false },
+  friday: { open: "08:00", close: "20:00", closed: false },
+  saturday: { open: "09:00", close: "18:00", closed: false },
+  sunday: { open: "10:00", close: "16:00", closed: true },
+};
+
+function formatHours(h: HoursRecord): string {
+  const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+  const abbr = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const parts: string[] = [];
+  let i = 0;
+  while (i < 7) {
+    const day = days[i];
+    if (h[day].closed) {
+      i++;
+      continue;
+    }
+    const open = h[day].open;
+    const close = h[day].close;
+    let j = i + 1;
+    while (j < 7 && !h[days[j]].closed && h[days[j]].open === open && h[days[j]].close === close) {
+      j++;
+    }
+    if (j - i === 1) {
+      parts.push(`${abbr[i]} ${open}–${close}`);
+    } else {
+      parts.push(`${abbr[i]}–${abbr[j - 1]} ${open}–${close}`);
+    }
+    i = j;
+  }
+  return parts.join(", ") || "Closed";
+}
 
 export function ImpressumFooter() {
+  const [hoursText, setHoursText] = useState("Mon–Fri 8:00–20:00, Sat 9:00–18:00");
+
+  useEffect(() => {
+    getPublicSettings()
+      .then((settings) => {
+        if (settings.pharmacy_hours) {
+          try {
+            const h = typeof settings.pharmacy_hours === "string"
+              ? JSON.parse(settings.pharmacy_hours as string)
+              : settings.pharmacy_hours;
+            const merged: HoursRecord = { ...defaultHours };
+            for (const day of Object.keys(defaultHours) as (keyof HoursRecord)[]) {
+              if (h[day]) merged[day] = { ...merged[day], ...h[day] };
+            }
+            setHoursText(formatHours(merged));
+          } catch { /* keep default */ }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className="mt-20 border-t bg-slate-50">
       <div className="container mx-auto grid gap-10 px-4 py-12 md:grid-cols-4">
@@ -94,7 +170,7 @@ export function ImpressumFooter() {
               support@mohamads-medicore-pharmacy.de
             </li>
           </ul>
-          <p className="mt-3 text-xs text-slate-500">Mon–Fri 8:00–20:00, Sat 9:00–18:00</p>
+          <p className="mt-3 text-xs text-slate-500">{hoursText}</p>
         </div>
       </div>
 
