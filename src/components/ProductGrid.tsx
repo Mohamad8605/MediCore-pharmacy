@@ -15,6 +15,7 @@ export function ProductGrid() {
   const [category, setCategory] = useState("All");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const add = useCart((s) => s.add);
+  const cartItems = useCart((s) => s.items);
   const fp = useFormatPrice();
 
   const filtered = useMemo(() => filter(query, category), [query, category, filter]);
@@ -57,7 +58,10 @@ export function ProductGrid() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((p) => (
+        {filtered.map((p) => {
+          const cartQty = cartItems.find((i) => i.medication.id === p.id)?.quantity ?? 0;
+          const remaining = p.stock - cartQty;
+          return (
           <article
             key={p.id}
             className="group flex flex-col rounded-2xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -101,13 +105,13 @@ export function ProductGrid() {
               <div>
                 <p className="text-lg font-semibold tracking-tight">{fp(Number(p.price))}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {p.stock > 0 ? `${p.stock} in stock` : "Out of stock"}
+                  {remaining > 0 ? `${remaining} in stock` : "Out of stock"}
                 </p>
               </div>
               <Button
                 size="sm"
                 className="gap-1.5 rounded-xl"
-                disabled={p.stock === 0}
+                disabled={remaining === 0}
                 onClick={() => {
                   add(p, 1);
                   toast.success(`${p.name} added to cart`);
@@ -118,7 +122,8 @@ export function ProductGrid() {
               </Button>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
 
       {!loading && filtered.length === 0 && (
