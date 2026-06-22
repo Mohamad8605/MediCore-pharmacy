@@ -25,6 +25,7 @@ import { Plus, Pill, Search, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { useStockSync } from "@/lib/use-stock-sync";
+import { useStockStore } from "@/lib/stock-store";
 import {
   fetchAllMedications,
   createMedication,
@@ -94,7 +95,6 @@ export function MedicationsTab() {
   const [lowStockThreshold, setLowStockThreshold] = useState(10);
 
   async function load() {
-    setLoading(true);
     try {
       const [data, settings] = await Promise.all([
         fetchAllMedications(),
@@ -106,7 +106,6 @@ export function MedicationsTab() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load medications");
     }
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -146,6 +145,7 @@ export function MedicationsTab() {
       toast.success("Medication updated");
       setEditId(null);
       load();
+      useStockStore.getState().refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update");
     }
@@ -160,6 +160,7 @@ export function MedicationsTab() {
       setAddOpen(false);
       setAddForm(emptyForm);
       load();
+      useStockStore.getState().refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create");
     }
@@ -171,6 +172,7 @@ export function MedicationsTab() {
       await updateMedication(id, { is_active: !current } as unknown as Record<string, unknown>);
       toast.success(current ? "Deactivated" : "Activated");
       load();
+      useStockStore.getState().refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to toggle");
     }

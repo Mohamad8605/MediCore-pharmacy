@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,30 +20,30 @@ function AdminPage() {
   const { user, isStaff, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (authLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-8 w-64" />
-        <div className="mt-6 space-y-4">
-          <div className="flex gap-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-32 rounded-md" />
-            ))}
-          </div>
-          <Skeleton className="h-64 w-full rounded-xl" />
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!authLoading && !user) navigate({ to: "/login" });
+    if (!authLoading && user && !isStaff) navigate({ to: "/" });
+  }, [authLoading, user, isStaff, navigate]);
 
-  if (!user) {
-    navigate({ to: "/login" });
+  if (authLoading || !user) {
+    if (authLoading) {
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-8 w-64" />
+          <div className="mt-6 space-y-4">
+            <div className="flex gap-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-32 rounded-md" />
+              ))}
+            </div>
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+        </div>
+      );
+    }
     return null;
   }
-  if (!isStaff) {
-    navigate({ to: "/" });
-    return null;
-  }
+  if (!isStaff) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">
