@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ShieldCheck,
   Truck,
@@ -12,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ERezeptScanner } from "@/components/ERezeptScanner";
+import { PrescriptionUploadDialog } from "@/components/PrescriptionUploadDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,6 +43,8 @@ const trustPoints = [
 ];
 
 function Index() {
+  const [uploadOpen, setUploadOpen] = useState(false);
+
   return (
     <>
       <section className="border-b bg-gradient-to-b from-primary/5 to-transparent">
@@ -65,11 +69,14 @@ function Index() {
                   Browse medicines <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <a href="#prescription">
-                <Button size="lg" variant="outline" className="rounded-xl">
-                  Upload prescription
-                </Button>
-              </a>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setUploadOpen(true)}
+              >
+                Upload prescription
+              </Button>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -143,6 +150,7 @@ function Index() {
           </div>
         </div>
       </section>
+      <PrescriptionUploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
     </>
   );
 }

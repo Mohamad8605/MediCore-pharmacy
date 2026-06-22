@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { CartDrawer } from "@/components/CartDrawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLanguage } from "@/lib/LanguageContext";
+import { SearchOverlay } from "@/components/SearchOverlay";
 
 export function Navbar() {
   const { user, isStaff, signOut } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -18,6 +20,17 @@ export function Navbar() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const navLinks = (
     <>
@@ -72,11 +85,14 @@ export function Navbar() {
           >
             {lang === "de" ? "EN" : "DE"}
           </Button>
-          <Link to="/medications">
-            <Button variant="ghost" size="icon" aria-label={t("nav.search")}>
-              <Search className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("nav.search")}
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
           <CartDrawer />
           {user ? (
             <>
@@ -119,6 +135,7 @@ export function Navbar() {
       >
         <nav className="flex flex-col gap-3 border-t bg-background px-4 py-4">{navLinks}</nav>
       </div>
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
