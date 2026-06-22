@@ -15,10 +15,12 @@ export function ProductGrid() {
   const stockMap = useStockSync(ids);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
+  const [showAll, setShowAll] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const fp = useFormatPrice();
 
   const filtered = useMemo(() => filter(query, category), [query, category, filter]);
+  const displayed = useMemo(() => (showAll ? filtered : filtered.slice(0, 4)), [filtered, showAll]);
 
   return (
     <section className="space-y-6">
@@ -58,7 +60,7 @@ export function ProductGrid() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((p) => {
+        {displayed.map((p) => {
           const remaining = stockMap[p.id] ?? p.stock;
           return (
             <article
@@ -121,6 +123,18 @@ export function ProductGrid() {
           );
         })}
       </div>
+
+      {!loading && filtered.length > 4 && !showAll && (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => setShowAll(true)}
+          >
+            See all {filtered.length} medicines
+          </Button>
+        </div>
+      )}
 
       {!loading && filtered.length === 0 && (
         <p className="rounded-2xl border bg-muted/30 px-6 py-10 text-center text-sm text-muted-foreground">
