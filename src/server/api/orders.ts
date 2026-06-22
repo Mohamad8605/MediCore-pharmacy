@@ -188,7 +188,7 @@ export const createOrder = createServerFn({ method: "POST" }).handler(async (ctx
         } catch {
           // bad json, keep defaults
         }
-      getDemoProfiles().set(userId, { id: userId, first_name: first, last_name: last });
+      getDemoProfiles().set(userId, { id: userId, first_name: first, last_name: last, phone: null, street: null, city: null, postcode: null });
       saveDemoProfiles();
     }
 

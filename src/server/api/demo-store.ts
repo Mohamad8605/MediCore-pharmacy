@@ -18,6 +18,10 @@ export interface DemoProfileEntry {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  phone: string | null;
+  street: string | null;
+  city: string | null;
+  postcode: string | null;
 }
 
 const DATA_DIR = join(process.cwd(), ".demo-data");
