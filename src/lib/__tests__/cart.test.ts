@@ -103,4 +103,53 @@ describe("useCart", () => {
     useCart.getState().clear();
     expect(useCart.getState().items).toHaveLength(0);
   });
+
+  it("revalidateStock() removes items whose stock dropped to zero", () => {
+    useCart.getState().add(makeMed({ id: "a" }));
+    useCart.getState().add(makeMed({ id: "b" }));
+    useCart.getState().revalidateStock({ a: 0, b: 5 });
+    expect(useCart.getState().items).toHaveLength(1);
+    expect(useCart.getState().items[0].medication.id).toBe("b");
+  });
+
+  it("revalidateStock() clamps quantity when stock drops below current qty", () => {
+    useCart.getState().add(makeMed({ id: "a", stock: 10 }), 8);
+    useCart.getState().revalidateStock({ a: 3 });
+    expect(useCart.getState().items[0].quantity).toBe(3);
+  });
+
+  it("revalidateStock() updates stock number even if quantity is fine", () => {
+    useCart.getState().add(makeMed({ id: "a", stock: 10 }), 2);
+    useCart.getState().revalidateStock({ a: 7 });
+    expect(useCart.getState().items[0].medication.stock).toBe(7);
+    expect(useCart.getState().items[0].quantity).toBe(2);
+  });
+
+  it("revalidateStock() does nothing when stock is unchanged", () => {
+    useCart.getState().add(makeMed({ id: "a", stock: 5 }));
+    useCart.getState().revalidateStock({ a: 5 });
+    expect(useCart.getState().items).toHaveLength(1);
+    expect(useCart.getState().items[0].quantity).toBe(1);
+  });
+
+  it("persists items to localStorage under the correct key", () => {
+    useCart.getState().add(makeMed({ id: "persist-test", name: "PersistMed", price: 4.99, stock: 3 }));
+    const saved = JSON.parse(localStorage.getItem("mohamads-medicore-cart") || "{}");
+    expect(saved.state.items).toHaveLength(1);
+    expect(saved.state.items[0].medication.name).toBe("PersistMed");
+    expect(saved.state.items[0].medication.price).toBe(4.99);
+  });
+
+  it("remove() on a non-existent ID does nothing", () => {
+    useCart.getState().add(makeMed());
+    useCart.getState().remove("non-existent");
+    expect(useCart.getState().items).toHaveLength(1);
+  });
+
+  it("setQuantity() on a non-existent ID does nothing", () => {
+    useCart.getState().add(makeMed());
+    useCart.getState().setQuantity("non-existent", 5);
+    expect(useCart.getState().items).toHaveLength(1);
+    expect(useCart.getState().items[0].quantity).toBe(1);
+  });
 });

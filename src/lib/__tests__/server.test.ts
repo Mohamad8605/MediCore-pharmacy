@@ -210,4 +210,20 @@ describe("uploadPrescription", () => {
     expect(result.path).toBeNull();
     expect(result.error).toContain("allowed format");
   });
+
+  it("accepts a valid JPEG file and returns a path", async () => {
+    mockRequireAuthUserId.mockResolvedValue("user-1");
+
+    const uploadMock = vi.fn().mockResolvedValue({ data: { path: "user-1/123.jpg" }, error: null });
+    (mockSupabase.storage as Record<string, unknown>) = {
+      from: vi.fn(() => ({ upload: uploadMock })),
+    };
+
+    const result = await uploadPrescriptionFn({
+      data: { fileName: "valid.jpg", fileBase64: jpegBase64 },
+    });
+    expect(result.path).toBeTruthy();
+    expect(result.path).toMatch(/^user-1\/\d+\.jpg$/);
+    expect(result.error).toBeUndefined();
+  });
 });

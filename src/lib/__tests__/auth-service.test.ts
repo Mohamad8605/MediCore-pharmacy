@@ -57,4 +57,23 @@ describe("categorizeAuthError", () => {
     const result = categorizeAuthError(makeAuthError("invalid login credentials"));
     expect(result.message).toContain("Incorrect email or password");
   });
+
+  it("matches case-insensitively", () => {
+    const upper = categorizeAuthError(makeAuthError("EMAIL NOT CONFIRMED"));
+    expect(upper.kind).toBe("email_not_confirmed");
+
+    const mixed = categorizeAuthError(makeAuthError("Invalid Login Credentials"));
+    expect(mixed.kind).toBe("invalid_password");
+  });
+
+  it("handles a null or undefined message gracefully", () => {
+    const noMsg = categorizeAuthError({ name: "AuthError", status: 400 } as AuthError);
+    expect(noMsg.kind).toBe("unknown");
+    expect(noMsg.message).toContain("Something went wrong");
+  });
+
+  it("logs the email in the logMessage field when provided", () => {
+    const result = categorizeAuthError(makeAuthError("invalid login credentials"), "test@example.com");
+    expect(result.logMessage).toContain("test@example.com");
+  });
 });
