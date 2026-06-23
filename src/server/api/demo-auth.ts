@@ -17,7 +17,7 @@ export const DEMO_USERS: DemoUser[] = [
     password: "Admin123!",
     first_name: "Admin",
     last_name: "User",
-    roles: ["admin", "patient"],
+    roles: ["admin"],
   },
   {
     id: "demo-patient-0000-0000-0000-000000000002",
@@ -34,7 +34,7 @@ export const DEMO_USERS: DemoUser[] = [
     password: "Pharmacist123!",
     first_name: "Erik",
     last_name: "Johansson",
-    roles: ["pharmacist", "patient"],
+    roles: ["pharmacist"],
     phone: "+46 72 345 67 89",
   },
 ];

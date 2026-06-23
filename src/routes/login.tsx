@@ -23,7 +23,7 @@ const DEMO_USERS = [
     label: "Admin",
     email: "admin@medicore.com",
     pw: "Admin123!",
-    role: "admin + patient",
+    role: "admin",
     color: "bg-red-100 hover:bg-red-200 text-red-800 border-red-300",
   },
   {
@@ -37,7 +37,7 @@ const DEMO_USERS = [
     label: "Pharmacist",
     email: "pharmacist@medicore.com",
     pw: "Pharmacist123!",
-    role: "pharmacist + patient",
+    role: "pharmacist",
     color: "bg-green-100 hover:bg-green-200 text-green-800 border-green-300",
   },
 ];
