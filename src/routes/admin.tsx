@@ -12,7 +12,7 @@ import { UsersTab } from "@/components/admin/UsersTab";
 import { LayoutDashboard, Settings, Mail, Pill, Users } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Pharmacist Dashboard" }] }),
+  head: () => ({ meta: [{ title: "Dashboard" }] }),
   component: AdminPage,
 });
 
@@ -47,9 +47,11 @@ function AdminPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">Pharmacist dashboard</h1>
+      <h1 className="text-3xl font-bold">{isAdmin ? "Admin" : "Pharmacist"} dashboard</h1>
       <p className="mt-1 text-muted-foreground">
-        Manage orders, medications, contact messages and user roles.
+        {isAdmin
+          ? "Manage orders, medications, contact messages and user roles."
+          : "Manage orders, medications and contact messages."}
       </p>
 
       <Tabs defaultValue="orders" className="mt-6">
