@@ -120,7 +120,13 @@ export function UsersTab() {
       setDeleteTarget(null);
       load();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete user");
+      const msg =
+        err instanceof Error
+          ? err.message
+          : err instanceof Response
+            ? `Server error (${err.status})`
+            : "Failed to delete user";
+      toast.error(msg);
     }
   }
 
