@@ -277,11 +277,17 @@ export const createUser = createServerFn({ method: "POST" }).handler(async (ctx)
     email_confirm: true,
   });
   if (error) throw error;
+
+  await supabaseAdmin.from("profiles").upsert(
+    { id: data.user.id },
+    { onConflict: "id", ignoreDuplicates: true },
+  );
+
   if (role) {
-    const { error: roleError } = await supabaseAdmin
-      .from("user_roles")
-      .insert({ user_id: data.user.id, role: role as "admin" | "pharmacist" | "patient" });
-    if (roleError) throw roleError;
+    await supabaseAdmin.from("user_roles").upsert(
+      { user_id: data.user.id, role: role as "admin" | "pharmacist" | "patient" },
+      { onConflict: "user_id, role", ignoreDuplicates: true },
+    );
   }
   return data.user;
 });

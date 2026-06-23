@@ -132,6 +132,7 @@ export function UsersTab() {
       load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create user");
+      load();
     }
     setSaving(false);
   }
