@@ -253,6 +253,7 @@ export function UsersTab() {
               </Button>
             </DialogContent>
           </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {sorted.map((u) => {
