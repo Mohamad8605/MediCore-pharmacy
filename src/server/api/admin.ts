@@ -196,7 +196,12 @@ export const getAllUsers = createServerFn({ method: "GET" }).handler(async () =>
     roleMap[r.user_id].push(r.role);
   }
 
-  const dbUsers = (profilesRes.data ?? []).map((p) => ({
+  const seen = new Set<string>();
+  const dbUsers = (profilesRes.data ?? []).filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  }).map((p) => ({
     ...p,
     roles: roleMap[p.id] ?? [],
   })) as ProfileWithRoles[];
@@ -283,12 +288,9 @@ export const deleteUser = createServerFn({ method: "POST" }).handler(async (ctx)
   await requireAdminRole();
   const { userId } = ctx.data as unknown as { userId: string };
 
-  const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-
+  await supabaseAdmin.auth.admin.deleteUser(userId);
   await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
   await supabaseAdmin.from("profiles").delete().eq("id", userId);
-
-  if (authError && !authError.message?.includes("not found")) throw authError;
 });
 
 export const getAllSettings = createServerFn({ method: "GET" }).handler(async () => {
