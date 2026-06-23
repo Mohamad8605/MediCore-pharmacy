@@ -3,7 +3,9 @@ import {
   updateUserRole as serverUpdateUserRole,
   createUser as serverCreateUser,
   deleteUser as serverDeleteUser,
+  updateUserProfile as serverUpdateUserProfile,
 } from "@/server/api/admin";
+import type { Database } from "@/integrations/supabase/types";
 
 type ServerFn<TInput, TOutput> = (args: { data: TInput }) => Promise<TOutput>;
 
@@ -45,5 +47,16 @@ export async function createUser(email: string, password: string, role: string) 
 export async function deleteUser(userId: string) {
   return await (serverDeleteUser as unknown as ServerFn<DeleteUserInput, void>)({
     data: { userId },
+  });
+}
+
+type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+type UpdateUserProfileInput = { userId: string } & ProfileUpdate;
+
+export async function updateUserProfile(userId: string, updates: ProfileUpdate) {
+  return await (
+    serverUpdateUserProfile as unknown as ServerFn<UpdateUserProfileInput, void>
+  )({
+    data: { userId, ...updates },
   });
 }

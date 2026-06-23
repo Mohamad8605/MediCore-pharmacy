@@ -29,9 +29,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, ShieldAlert, User, Plus, Trash2, ArrowUpDown } from "lucide-react";
+import { Shield, ShieldAlert, User, Plus, Trash2, ArrowUpDown, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { getAllUsers, updateUserRole, createUser, deleteUser } from "@/lib/user-admin-service";
+import { getAllUsers, updateUserRole, createUser, deleteUser, updateUserProfile } from "@/lib/user-admin-service";
 import { useAuth } from "@/lib/auth";
 
 const ROLES = ["admin", "pharmacist", "patient"] as const;
@@ -55,6 +55,9 @@ export function UsersTab() {
   const [addRoleValue, setAddRoleValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
+  const [editTarget, setEditTarget] = useState<UserRow | null>(null);
+  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", street: "", city: "", postcode: "" });
+  const [editSaving, setEditSaving] = useState(false);
   const [sortField, setSortField] = useState("name");
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -149,6 +152,32 @@ export function UsersTab() {
             : "Failed to delete user";
       toast.error(msg);
     }
+  }
+
+  function startEdit(u: UserRow) {
+    setEditTarget(u);
+    setEditForm({
+      first_name: u.first_name ?? "",
+      last_name: u.last_name ?? "",
+      phone: "",
+      street: "",
+      city: "",
+      postcode: "",
+    });
+  }
+
+  async function handleEditSave() {
+    if (!editTarget) return;
+    setEditSaving(true);
+    try {
+      await updateUserProfile(editTarget.id, editForm);
+      toast.success("User updated");
+      setEditTarget(null);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update user");
+    }
+    setEditSaving(false);
   }
 
   const roleColors: Record<string, string> = {
@@ -333,6 +362,15 @@ export function UsersTab() {
                       )}
                     </SelectContent>
                   </Select>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                    onClick={() => startEdit(u)}
+                    title="Edit user"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   {!isSelf && (
                     <Button
                       size="icon"
@@ -376,6 +414,65 @@ export function UsersTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={editTarget !== null} onOpenChange={(v) => !v && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit user</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>First name</Label>
+                <Input
+                  value={editForm.first_name}
+                  onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Last name</Label>
+                <Input
+                  value={editForm.last_name}
+                  onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Street</Label>
+              <Input
+                value={editForm.street}
+                onChange={(e) => setEditForm({ ...editForm, street: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>City</Label>
+                <Input
+                  value={editForm.city}
+                  onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Postcode</Label>
+                <Input
+                  value={editForm.postcode}
+                  onChange={(e) => setEditForm({ ...editForm, postcode: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+          <Button onClick={handleEditSave} disabled={editSaving}>
+            {editSaving ? "Saving…" : "Save"}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

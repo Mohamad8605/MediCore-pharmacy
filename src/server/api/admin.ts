@@ -295,6 +295,15 @@ export const deleteUser = createServerFn({ method: "POST" }).handler(async (ctx)
   await supabaseAdmin.from("profiles").delete().eq("id", userId);
 });
 
+type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+
+export const updateUserProfile = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  await requireAdminRole();
+  const { userId, ...updates } = ctx.data as unknown as { userId: string } & ProfileUpdate;
+  const { error } = await supabaseAdmin.from("profiles").update(updates).eq("id", userId);
+  if (error) throw error;
+});
+
 export const getAllSettings = createServerFn({ method: "GET" }).handler(async () => {
   await requireStaffRole();
   const { data, error } = await supabaseAdmin.from("app_settings").select("*");
