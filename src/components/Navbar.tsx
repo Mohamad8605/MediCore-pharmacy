@@ -130,10 +130,31 @@ export function Navbar() {
       )}
       <div
         className={`overflow-hidden transition-all duration-200 md:hidden ${
-          mobileOpen ? "max-h-96" : "max-h-0"
+          mobileOpen ? "max-h-[600px]" : "max-h-0"
         }`}
       >
-        <nav className="flex flex-col gap-3 border-t bg-background px-4 py-4">{navLinks}</nav>
+        <nav className="flex flex-col border-t bg-background px-0">
+          {[
+            { to: "/", label: t("nav.home") },
+            { to: "/medications", label: t("nav.medications") },
+            { to: "/about", label: t("nav.about") },
+            { to: "/faq", label: t("nav.faq") },
+            { to: "/contact", label: t("nav.contact") },
+            ...(user ? [{ to: "/orders", label: t("nav.orders") }] : []),
+            ...(isStaff
+              ? [{ to: "/admin", label: <span className="flex items-center gap-2"><LayoutDashboard className="h-4 w-4" />{t("nav.dashboard")}</span> }]
+              : []),
+          ].map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMobileOpen(false)}
+              className="block w-full border-b border-border/40 px-4 py-3 text-sm hover:bg-muted/50 last:border-b-0"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </div>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
