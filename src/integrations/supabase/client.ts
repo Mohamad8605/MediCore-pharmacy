@@ -1,5 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
+/**
+ * Creates a Supabase client using publishable (anon) credentials.
+ * Falls back through VITE_, NEXT_PUBLIC_, and plain env var names.
+ * Throws if neither URL nor key is configured.
+ */
 function createSupabaseClient() {
   const SUPABASE_URL =
     import.meta.env.VITE_SUPABASE_URL ||
@@ -29,6 +34,10 @@ function createSupabaseClient() {
   });
 }
 
+/**
+ * Lazily-initialised singleton Supabase client.
+ * Uses a Proxy so the first property access triggers the creation.
+ */
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {

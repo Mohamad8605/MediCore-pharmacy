@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getEnvVar } from "./env";
 import { requireAuthUserId } from "./auth-helpers";
 
+/** Creates a Supabase anon client server-side with no persistent session. */
 function createAnonClient() {
   const SUPABASE_URL =
     getEnvVar("SUPABASE_URL") ||
@@ -36,6 +37,7 @@ type SignUpInput = {
   options?: { emailRedirectTo?: string; data?: Record<string, string> };
 };
 
+/** Creates a new user account via Supabase Admin API and sends a verification email. */
 export const signUp = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { email, password, options } = ctx.data as unknown as SignUpInput;
 
@@ -62,6 +64,7 @@ export const signUp = createServerFn({ method: "POST" }).handler(async (ctx) => 
   return { user: created.user, session: null };
 });
 
+/** Authenticates a user with email/password and returns the session. */
 export const signIn = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { email, password } = ctx.data as unknown as { email: string; password: string };
   const supabase = createAnonClient();
@@ -74,6 +77,7 @@ export const signIn = createServerFn({ method: "POST" }).handler(async (ctx) => 
 
   return { user: result.user, session: result.session };
 });
+/** Resends the sign-up confirmation email for a given email address. */
 export const resendVerification = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const email = ctx.data as unknown as string;
 
@@ -100,6 +104,7 @@ export const resendVerification = createServerFn({ method: "POST" }).handler(asy
   return {};
 });
 
+/** Sends a password-reset email. Uses APP_URL for the redirect link. */
 export const sendPasswordReset = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const email = ctx.data as unknown as string;
   const supabase = createAnonClient();
@@ -110,6 +115,7 @@ export const sendPasswordReset = createServerFn({ method: "POST" }).handler(asyn
   return {};
 });
 
+/** Updates the current user's email address. Requires re-authentication. */
 export const updateEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const newEmail = ctx.data as unknown as string;
   const supabase = createAnonClient();
@@ -118,6 +124,7 @@ export const updateEmail = createServerFn({ method: "POST" }).handler(async (ctx
   return {};
 });
 
+/** Fetches the current user's assigned roles from the user_roles table. */
 export const getUserRoles = createServerFn({ method: "GET" }).handler(async () => {
   const userId = await requireAuthUserId().catch(() => null);
   if (!userId) return [] as string[];

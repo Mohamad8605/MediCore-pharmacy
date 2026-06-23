@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ShieldCheck,
   Truck,
@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ERezeptScanner } from "@/components/ERezeptScanner";
 import { PrescriptionUploadDialog } from "@/components/PrescriptionUploadDialog";
@@ -42,8 +43,19 @@ const trustPoints = [
   { icon: Clock, label: "Pharmacist Support", sub: "Mon–Sat, real human advice" },
 ];
 
+/**
+ * Home page — hero section, category quick-links, featured product grid,
+ * e-prescription scanner, and prescription upload dialog.
+ * Redirects unauthenticated visitors to the sign-in page.
+ */
 function Index() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [uploadOpen, setUploadOpen] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !user) navigate({ to: "/login" });
+  }, [authLoading, user, navigate]);
 
   return (
     <>

@@ -42,10 +42,20 @@ const DEMO_USERS = [
   },
 ];
 
+/**
+ * Login page with email/password form, forgot-password flow,
+ * and three demo-login buttons (admin, patient, pharmacist).
+ * Redirects authenticated users to the home page automatically.
+ */
 function LoginPage() {
   const navigate = useNavigate();
-  const { user, isDemo, signOut } = useAuth();
+  const { user, loading: authLoading, isDemo, signOut } = useAuth();
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (!authLoading && user) navigate({ to: "/" });
+  }, [authLoading, user, navigate]);
+
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
