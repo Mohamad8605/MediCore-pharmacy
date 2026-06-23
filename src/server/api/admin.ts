@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireAuthUserId, requireStaffRole, requireAdminRole } from "./auth-helpers";
 import { getDemoOrders, getDemoProfiles, saveDemoOrders } from "./demo-store";
 import { DEMO_USERS } from "./demo-auth";
+import type { DemoProfileEntry } from "./demo-store";
 import type { Database, Json } from "@/integrations/supabase/types";
 
 const STATUSES = [
@@ -204,6 +205,28 @@ export const getAllUsers = createServerFn({ method: "GET" }).handler(async () =>
     ...p,
     roles: roleMap[p.id] ?? [],
   })) as ProfileWithRoles[];
+
+  const dbIds = new Set(dbUsers.map((u) => u.id));
+
+  for (const demo of DEMO_USERS) {
+    if (dbIds.has(demo.id)) continue;
+    if (demo.roles.length === 0) continue;
+    if (!demo.roles.includes("admin") && !demo.roles.includes("pharmacist")) continue;
+    const demoProfile = getDemoProfiles().get(demo.id) as DemoProfileEntry | undefined;
+    const now = new Date().toISOString();
+    dbUsers.push({
+      id: demo.id,
+      first_name: demoProfile?.first_name ?? demo.first_name,
+      last_name: demoProfile?.last_name ?? demo.last_name,
+      phone: demoProfile?.phone ?? demo.phone ?? null,
+      street: demoProfile?.street ?? null,
+      city: demoProfile?.city ?? null,
+      postcode: demoProfile?.postcode ?? null,
+      created_at: now,
+      updated_at: now,
+      roles: demo.roles,
+    } as ProfileWithRoles);
+  }
 
   return dbUsers;
 });
