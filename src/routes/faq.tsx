@@ -49,23 +49,25 @@ const faqs = [
 
 function FaqPage() {
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-16">
-      <h1 className="text-center text-4xl font-bold tracking-tight">Frequently asked questions</h1>
-      <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-16">
+      <h1 className="text-center text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight break-words">Frequently asked questions</h1>
+      <p className="mx-auto mt-3 max-w-xl text-center text-sm sm:text-base leading-relaxed text-muted-foreground">
         Can't find what you're looking for?{" "}
         <Link to="/contact" className="text-primary underline">
           Contact us
         </Link>
         .
       </p>
+      <div className="mx-auto max-w-3xl">
       <Accordion type="single" collapsible className="mt-10">
         {faqs.map((f, i) => (
-          <AccordionItem key={i} value={`i-${i}`}>
-            <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
-            <AccordionContent>{f.a}</AccordionContent>
+          <AccordionItem key={i} value={`i-${i}`} className="px-4 sm:px-0">
+            <AccordionTrigger className="text-left text-sm sm:text-base">{f.q}</AccordionTrigger>
+            <AccordionContent className="text-sm sm:text-base leading-relaxed break-words hyphens-auto">{f.a}</AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
+      </div>
       <div className="mt-12 text-center">
         <Link to="/medications">
           <Button>Browse medications</Button>

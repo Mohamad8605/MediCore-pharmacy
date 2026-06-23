@@ -11,9 +11,13 @@ export function ThemeToggle() {
       size="icon"
       onClick={toggle}
       aria-label={t("theme.toggle")}
-      className="rounded-xl"
+      className="rounded-xl w-9 h-9"
     >
-      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      {theme === "dark" ? (
+        <Sun className="h-4 w-4 sm:h-5 sm:w-5" />
+      ) : (
+        <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
+      )}
     </Button>
   );
 }

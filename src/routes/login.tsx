@@ -159,7 +159,7 @@ function LoginPage() {
 
   if (view === "email_not_confirmed") {
     return (
-      <div className="container mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-10">
+      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <EmailVerificationCard
           email={email}
           onBackToLogin={() => {
@@ -172,18 +172,18 @@ function LoginPage() {
   }
 
   return (
-    <div className="container mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-10">
-      <Card className="w-full">
-        <CardHeader>
+    <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <Card className="w-full min-w-0 rounded-2xl">
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-primary" />
-            <CardTitle>Welcome back</CardTitle>
+            <Lock className="h-5 w-5 text-primary shrink-0" />
+            <CardTitle className="text-lg sm:text-xl">Welcome back</CardTitle>
           </div>
           <CardDescription>Sign in to your account to continue.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
           {user && isDemo ? (
-            <div className="mb-6 rounded-lg border bg-muted/50 p-4 text-sm">
+            <div className="mb-6 rounded-lg border bg-muted/50 p-4 text-sm break-words hyphens-auto">
               <p className="font-medium">
                 Signed in as <span className="text-primary">{user.email}</span>
               </p>
@@ -199,7 +199,7 @@ function LoginPage() {
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {failure && (
-                  <div className="flex items-start gap-3 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+                  <div className="flex items-start gap-3 rounded-lg bg-destructive/10 p-4 text-sm text-destructive break-words hyphens-auto">
                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
                     <div>
                       <p>{failure.message}</p>
@@ -245,7 +245,7 @@ function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPw(!showPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 grid place-items-center w-9 h-9 text-muted-foreground hover:text-foreground"
                       tabIndex={-1}
                       aria-label={showPw ? "Hide password" : "Show password"}
                     >
@@ -265,12 +265,12 @@ function LoginPage() {
                   </button>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full sm:w-auto" disabled={loading}>
                   {loading ? "Signing in…" : "Sign in"}
                 </Button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-muted-foreground">
+              <p className="mt-4 text-center text-sm text-muted-foreground break-words hyphens-auto">
                 No account?{" "}
                 <Link
                   to="/register"

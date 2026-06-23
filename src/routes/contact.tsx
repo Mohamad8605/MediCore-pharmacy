@@ -47,23 +47,23 @@ function ContactPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Get in touch</h1>
-        <p className="mt-3 text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight break-words">Get in touch</h1>
+        <p className="mt-3 text-sm sm:text-base leading-relaxed text-muted-foreground">
           Questions about an order, a prescription or our service? Send us a message and a
           pharmacist will get back to you.
         </p>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-5xl gap-8 lg:grid-cols-3">
+      <div className="mx-auto mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-1">
           <Card>
             <CardContent className="flex items-start gap-3 p-5">
               <Mail className="mt-0.5 h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium">Email</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground break-words hyphens-auto">
                   support@mohamads-medicore-pharmacy.de
                 </p>
               </div>
@@ -74,7 +74,7 @@ function ContactPage() {
               <Phone className="mt-0.5 h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium">Phone</p>
-                <p className="text-sm text-muted-foreground">+49 30 98765432</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">+49 30 98765432</p>
               </div>
             </CardContent>
           </Card>
@@ -83,7 +83,7 @@ function ContactPage() {
               <MapPin className="mt-0.5 h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium">Address</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground break-words hyphens-auto">
                   Apothekenstraße 12
                   <br />
                   10115 Berlin
@@ -96,7 +96,7 @@ function ContactPage() {
               <Clock className="mt-0.5 h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium">Hours</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground break-words hyphens-auto">
                   Mon–Sat 9:00–19:00
                   <br />
                   Sun 10:00–16:00
@@ -112,7 +112,7 @@ function ContactPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="name">Name</Label>
                   <Input

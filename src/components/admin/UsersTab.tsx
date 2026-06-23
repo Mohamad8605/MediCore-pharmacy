@@ -31,7 +31,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, ShieldAlert, User, Plus, Trash2, ArrowUpDown, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { getAllUsers, updateUserRole, createUser, deleteUser, updateUserProfile } from "@/lib/user-admin-service";
+import {
+  getAllUsers,
+  updateUserRole,
+  createUser,
+  deleteUser,
+  updateUserProfile,
+} from "@/lib/user-admin-service";
 import { useAuth } from "@/lib/auth";
 
 const ROLES = ["admin", "pharmacist", "patient"] as const;
@@ -56,7 +62,14 @@ export function UsersTab() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [editTarget, setEditTarget] = useState<UserRow | null>(null);
-  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", street: "", city: "", postcode: "" });
+  const [editForm, setEditForm] = useState({
+    first_name: "",
+    last_name: "",
+    phone: "",
+    street: "",
+    city: "",
+    postcode: "",
+  });
   const [editSaving, setEditSaving] = useState(false);
   const [sortField, setSortField] = useState("name");
   const [sortAsc, setSortAsc] = useState(true);
@@ -126,9 +139,9 @@ export function UsersTab() {
       await createUser(addEmail, addPassword, addRoleValue);
       toast.success("User created");
       setAddOpen(false);
-            setAddEmail("");
-            setAddPassword("");
-            setAddRoleValue("");
+      setAddEmail("");
+      setAddPassword("");
+      setAddRoleValue("");
       load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create user");
@@ -236,53 +249,53 @@ export function UsersTab() {
               </Button>
             </div>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-1 h-4 w-4" /> Add user
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add user</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-3 py-2">
-                <div>
-                  <Label>Email *</Label>
-                  <Input
-                    type="email"
-                    value={addEmail}
-                    onChange={(e) => setAddEmail(e.target.value)}
-                  />
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="mr-1 h-4 w-4" /> Add user
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add user</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-3 py-2">
+                  <div>
+                    <Label>Email *</Label>
+                    <Input
+                      type="email"
+                      value={addEmail}
+                      onChange={(e) => setAddEmail(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Password *</Label>
+                    <Input
+                      type="password"
+                      value={addPassword}
+                      onChange={(e) => setAddPassword(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Select value={addRoleValue} onValueChange={setAddRoleValue}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ROLES.map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {r}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <Label>Password *</Label>
-                  <Input
-                    type="password"
-                    value={addPassword}
-                    onChange={(e) => setAddPassword(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Role</Label>
-                  <Select value={addRoleValue} onValueChange={setAddRoleValue}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLES.map((r) => (
-                        <SelectItem key={r} value={r}>
-                          {r}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Button onClick={handleAddUser} disabled={saving || !addEmail || !addPassword}>
-                {saving ? "Creating…" : "Create user"}
-              </Button>
-            </DialogContent>
-          </Dialog>
+                <Button onClick={handleAddUser} disabled={saving || !addEmail || !addPassword}>
+                  {saving ? "Creating…" : "Create user"}
+                </Button>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -290,7 +303,10 @@ export function UsersTab() {
             const availableRoles = ROLES.filter((r) => !u.roles.includes(r));
             const isSelf = u.id === currentUser?.id;
             return (
-              <div key={u.id} className="flex items-center justify-between rounded-lg border p-3">
+              <div
+                key={u.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border p-3"
+              >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">
                     {u.first_name || u.last_name
@@ -315,9 +331,7 @@ export function UsersTab() {
                           {role}
                           <button
                             onClick={() =>
-                              role === "patient"
-                                ? setDeleteTarget(u)
-                                : removeRole(u.id, role)
+                              role === "patient" ? setDeleteTarget(u) : removeRole(u.id, role)
                             }
                             disabled={
                               (assigning?.userId === u.id && assigning?.role === role) ||
@@ -340,7 +354,7 @@ export function UsersTab() {
                     })}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <Select
                     value=""
                     onValueChange={(role) => addRole(u.id, role)}
@@ -366,7 +380,7 @@ export function UsersTab() {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                    className="h-10 w-10 shrink-0 text-muted-foreground hover:text-primary"
                     onClick={() => startEdit(u)}
                     title="Edit user"
                   >
@@ -376,7 +390,7 @@ export function UsersTab() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      className="h-10 w-10 shrink-0 text-muted-foreground hover:text-destructive"
                       onClick={() => setDeleteTarget(u)}
                       title="Delete user"
                     >
@@ -400,7 +414,7 @@ export function UsersTab() {
             <AlertDialogDescription>
               This will permanently delete{" "}
               <strong>
-                {deleteTarget?.first_name ?? deleteTarget?.last_name
+                {(deleteTarget?.first_name ?? deleteTarget?.last_name)
                   ? `${deleteTarget?.first_name ?? ""} ${deleteTarget?.last_name ?? ""}`.trim()
                   : "this user"}
               </strong>{" "}
@@ -409,7 +423,10 @@ export function UsersTab() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

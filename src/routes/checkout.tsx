@@ -158,10 +158,10 @@ function CheckoutPage() {
 
   if (!user) return null;
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">{editOrderId ? "Edit order" : "Checkout"}</h1>
-      <form onSubmit={placeOrder} className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold break-words">{editOrderId ? "Edit order" : "Checkout"}</h1>
+      <form onSubmit={placeOrder} className="mt-4 sm:mt-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Delivery method</CardTitle>
@@ -269,11 +269,11 @@ function CheckoutPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {items.map((i) => (
-              <div key={i.medication.id} className="flex justify-between">
-                <span className="text-muted-foreground">
+              <div key={i.medication.id} className="flex justify-between gap-2">
+                <span className="text-muted-foreground break-words flex-1 min-w-0">
                   {i.medication.name} × {i.quantity}
                 </span>
-                <span>{fp(i.medication.price * i.quantity)}</span>
+                <span className="shrink-0">{fp(i.medication.price * i.quantity)}</span>
               </div>
             ))}
             <div className="border-t pt-2 flex justify-between">

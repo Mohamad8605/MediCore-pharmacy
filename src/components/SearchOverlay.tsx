@@ -56,9 +56,9 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
           </kbd>
           <button
             onClick={onClose}
-            className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-muted sm:hidden"
+            className="grid h-9 w-9 place-items-center rounded-md text-muted-foreground hover:bg-muted sm:hidden"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -75,12 +75,12 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                 const remaining = stockMap[m.id] ?? m.stock;
                 return (
                   <li key={m.id}>
-                    <div className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-muted">
+                    <div className="flex items-center gap-2 sm:gap-3 rounded-xl px-2 sm:px-3 py-2 transition hover:bg-muted">
                       <Link
                         to="/medications/$id"
                         params={{ id: m.id }}
                         onClick={onClose}
-                        className="flex items-center gap-3 flex-1 min-w-0"
+                        className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0"
                       >
                         <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-primary/10 text-primary">
                           {m.image_url && !failedImages.has(m.id) ? (
@@ -97,8 +97,8 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                           )}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate font-medium">{m.name}</span>
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <span className="truncate font-medium break-words">{m.name}</span>
                             {m.requires_prescription ? (
                               <Badge
                                 variant="destructive"
@@ -118,16 +118,16 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                           <p className="text-xs text-muted-foreground">{m.category}</p>
                         </div>
                       </Link>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <div className="text-right">
+                      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                        <div className="text-right hidden sm:block">
                           <p className="text-sm font-semibold">{fp(Number(m.price))}</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {remaining > 0 ? `${remaining} in stock` : "Out of stock"}
                           </p>
                         </div>
                         <Button
                           size="sm"
-                          className="rounded-xl"
+                          className="rounded-xl h-10"
                           disabled={remaining === 0}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -135,7 +135,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                             onClose();
                           }}
                         >
-                          <ShoppingCart className="mr-1 h-3.5 w-3.5" />
+                          <ShoppingCart className="mr-1 h-4 w-4" />
                           Add
                         </Button>
                       </div>

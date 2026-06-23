@@ -377,7 +377,9 @@ export function SettingsTab() {
               const d = hours[day];
               return (
                 <div key={day} className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
-                  <span className="w-24 text-sm font-medium capitalize">{dayLabels[day]}</span>
+                  <span className="w-24 sm:w-28 text-sm font-medium capitalize">
+                    {dayLabels[day]}
+                  </span>
                   <div className="flex items-center gap-2">
                     <Switch
                       id={`${day}-closed`}

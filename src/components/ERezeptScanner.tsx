@@ -32,9 +32,9 @@ export function ERezeptScanner() {
   };
 
   return (
-    <div className="rounded-2xl border bg-card p-6 shadow-sm">
+    <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
           <QrCode className="h-5 w-5" />
         </span>
         <div>
@@ -54,7 +54,7 @@ export function ERezeptScanner() {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={[
-          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition",
+          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 sm:px-6 py-8 sm:py-10 text-center transition",
           dragging ? "border-primary bg-primary/5" : "border-border bg-muted/30 hover:bg-muted/50",
         ].join(" ")}
       >

@@ -43,122 +43,128 @@ const trustPoints = [
   { icon: Clock, label: "Pharmacist Support", sub: "Mon–Sat, real human advice" },
 ];
 
-/**
- * Home page — hero section, category quick-links, featured product grid,
- * e-prescription scanner, and prescription upload dialog.
- * Redirects unauthenticated visitors to the sign-in page.
- */
 function Index() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [uploadOpen, setUploadOpen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate({ to: "/login" });
+    if (!authLoading && !user) navigate({ to: "/login", replace: true });
   }, [authLoading, user, navigate]);
 
   return (
     <>
-      <section className="border-b bg-gradient-to-b from-primary/5 to-transparent">
-        <div className="container mx-auto grid items-center gap-12 px-4 py-16 md:grid-cols-5 md:py-24">
-          <div className="md:col-span-3">
-            <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-primary">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/[0.07] to-background">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-24">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs sm:text-sm font-medium text-primary shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Your pharmacy · online & on-site
+              Your pharmacy &middot; online & on-site
             </span>
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+            <h1 className="mt-4 sm:mt-5 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
               Order medicines with confidence.
               <br />
               <span className="text-primary">Upload your prescription in seconds.</span>
             </h1>
-            <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
               A modern online pharmacy: over-the-counter products, secure prescription upload, and
-              personal pharmacist support — all in one calm, clear interface.
+              personal pharmacist support &mdash; all in one calm, clear interface.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/medications">
-                <Button size="lg" className="rounded-xl gap-2">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-4">
+              <Link to="/medications" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto rounded-xl gap-2 text-sm sm:text-base px-6 py-3 h-auto">
                   Browse medicines <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-xl"
+                className="w-full sm:w-auto rounded-xl text-sm sm:text-base px-6 py-3 h-auto"
                 onClick={() => setUploadOpen(true)}
               >
                 Upload prescription
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {trustPoints.map((t) => (
-                <div
-                  key={t.label}
-                  className="flex items-start gap-3 rounded-2xl border bg-card p-3"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <t.icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium leading-tight">{t.label}</p>
-                    <p className="text-xs text-muted-foreground">{t.sub}</p>
-                  </div>
+      <section className="border-b">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {trustPoints.map((t) => (
+              <div
+                key={t.label}
+                className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-3 rounded-2xl border bg-card p-5 sm:p-5 text-center sm:text-left shadow-sm"
+              >
+                <span className="grid h-10 w-10 sm:h-9 sm:w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <t.icon className="h-5 w-5 sm:h-4 sm:w-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium leading-tight">{t.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t.sub}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="md:col-span-2" id="prescription">
-            <ERezeptScanner />
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-12">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((c) => (
-            <Link
-              key={c.label}
-              to="/medications"
-              search={{ category: c.label }}
-              className="group flex items-center gap-3 rounded-2xl border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"
-            >
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-                <c.icon className="h-5 w-5" />
-              </span>
-              <span className="font-medium">{c.label}</span>
-              <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-            </Link>
-          ))}
+      <section className="border-b">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {categories.map((c) => (
+              <Link
+                key={c.label}
+                to="/medications"
+                search={{ category: c.label }}
+                className="group flex flex-col items-center gap-3 rounded-2xl border bg-card p-5 sm:p-6 text-center transition-all hover:border-primary/30 hover:shadow-md"
+              >
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+                  <c.icon className="h-6 w-6" />
+                </span>
+                <div>
+                  <span className="font-semibold text-sm sm:text-base leading-tight block">{c.label}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 pb-16">
+      <section className="border-b">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <ERezeptScanner />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         <ProductGrid />
       </section>
 
-      <section className="border-y bg-slate-50">
-        <div className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-3">
-          <div>
-            <h3 className="font-semibold">Pharmacist-reviewed safety</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Every prescription medicine is reviewed by a registered pharmacist before it leaves
-              our dispensary.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold">Transparent pricing</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              All prices include VAT with no hidden fees. Free delivery on orders over €25.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold">GDPR-grade privacy</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Your health data stays encrypted. We never share it with third parties — all data is
-              stored on EU servers.
-            </p>
+      <section className="border-t bg-gradient-to-r from-primary/[0.03] to-transparent">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-14">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="rounded-2xl border bg-card p-5 sm:p-6 shadow-sm">
+              <h3 className="text-sm sm:text-base font-semibold">Pharmacist-reviewed safety</h3>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Every prescription medicine is reviewed by a registered pharmacist before it leaves
+                our dispensary.
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-card p-5 sm:p-6 shadow-sm">
+              <h3 className="text-sm sm:text-base font-semibold">Transparent pricing</h3>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                All prices include VAT with no hidden fees. Free delivery on orders over &euro;25.
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-card p-5 sm:p-6 shadow-sm">
+              <h3 className="text-sm sm:text-base font-semibold">GDPR-grade privacy</h3>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Your health data stays encrypted. We never share it with third parties &mdash; all
+                data is stored on EU servers.
+              </p>
+            </div>
           </div>
         </div>
       </section>

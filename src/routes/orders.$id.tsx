@@ -134,10 +134,10 @@ function OrderDetailPage() {
 
   if (!order)
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <Skeleton className="h-9 w-24 rounded-md" />
         <Skeleton className="mt-4 h-10 w-48" />
-        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             <Card>
               <CardContent className="p-6 space-y-4">
@@ -170,16 +170,16 @@ function OrderDetailPage() {
   const idx = STEPS.findIndex((s) => s.key === order.status);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <Link to="/orders">
-        <Button variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back
         </Button>
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">Order details</h1>
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <h1 className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-bold">Order details</h1>
+      <div className="mt-4 sm:mt-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Order #{order.id.slice(0, 8)}</CardTitle>
@@ -268,60 +268,62 @@ function OrderDetailPage() {
           </Card>
         </div>
         <Card className="h-fit">
-          <CardHeader>
-            <CardTitle>Status</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Status</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             {order.status === "cancelled" ? (
-              <div className="text-center py-6">
-                <XCircle className="mx-auto h-12 w-12 text-destructive" />
+              <div className="text-center py-4 sm:py-6">
+                <XCircle className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-destructive" />
                 <p className="mt-2 font-semibold text-destructive">Cancelled</p>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-4 text-muted-foreground hover:text-destructive"
+                  className="mt-3 sm:mt-4 text-muted-foreground hover:text-destructive"
                   onClick={handleDelete}
                   disabled={deleting}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {deleting ? "Deleting…" : "Delete order"}
                 </Button>
               </div>
             ) : (
               <>
-                <ol className="space-y-4">
+                <ol className="space-y-3 sm:space-y-4">
                   {STEPS.map((s, i) => {
                     const done = i <= idx;
                     return (
-                      <li key={s.key} className="flex items-start gap-3">
+                      <li key={s.key} className="flex items-start gap-2 sm:gap-3">
                         {done ? (
-                          <CheckCircle2 className="h-6 w-6 shrink-0 text-primary" />
+                          <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 text-primary" />
                         ) : (
-                          <Clock className="h-6 w-6 shrink-0 text-muted-foreground" />
+                          <Clock className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 text-muted-foreground" />
                         )}
-                        <div>
-                          <p className={done ? "font-medium" : "text-muted-foreground"}>
+                        <div className="min-w-0">
+                          <p className={`text-sm sm:text-base ${done ? "font-medium" : "text-muted-foreground"}`}>
                             {s.label}
                           </p>
-                          {i === idx && <p className="text-xs text-primary">Current</p>}
+                          {i === idx && <p className="text-[10px] sm:text-xs text-primary">Current</p>}
                         </div>
                       </li>
                     );
                   })}
                 </ol>
-                {order.status === "pending" && (
-                  <div className="mt-6 border-t pt-4 space-y-2">
-                    <Button variant="default" className="w-full" onClick={handleEdit}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit order
-                    </Button>
+                {(order.status === "pending" || order.status === "confirmed") && (
+                  <div className="mt-4 sm:mt-6 border-t pt-3 sm:pt-4 space-y-2">
+                    {order.status === "pending" && (
+                      <Button variant="default" className="w-full" onClick={handleEdit}>
+                        <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        Edit order
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="w-full text-destructive hover:text-destructive"
                       onClick={handleCancel}
                       disabled={cancelling}
                     >
-                      <XCircle className="mr-2 h-4 w-4" />
+                      <XCircle className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       {cancelling ? "Cancelling…" : "Cancel order"}
                     </Button>
                   </div>

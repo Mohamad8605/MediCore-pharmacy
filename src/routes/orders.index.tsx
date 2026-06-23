@@ -113,8 +113,8 @@ function OrdersPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">My orders</h1>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold">My orders</h1>
       {loading ? (
         <div className="mt-6 space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -159,49 +159,55 @@ function OrdersPage() {
                     {o.order_items.length} items · {o.delivery_method}
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant={o.status === "cancelled" ? "destructive" : "secondary"}
-                    className="capitalize"
-                  >
-                    {o.status === "cancelled" && <XCircle className="mr-1 h-3 w-3" />}
-                    {o.status.replace("_", " ")}
-                  </Badge>
-                  <p className="font-semibold text-primary">{fp(Number(o.total_price))}</p>
-                  <Link to="/orders/$id" params={{ id: o.id }}>
-                    <Button size="sm" variant="outline">
-                      <Eye className="mr-1 h-4 w-4" />
-                      View
-                    </Button>
-                  </Link>
-                  {o.status === "pending" && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(o.id)}>
-                        <Edit className="mr-1 h-4 w-4" />
-                        Edit
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={o.status === "cancelled" ? "destructive" : "secondary"}
+                      className="capitalize"
+                    >
+                      {o.status === "cancelled" && <XCircle className="mr-1 h-3 w-3" />}
+                      {o.status.replace("_", " ")}
+                    </Badge>
+                    <p className="font-semibold text-primary">{fp(Number(o.total_price))}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <Link to="/orders/$id" params={{ id: o.id }}>
+                      <Button size="sm" variant="outline" className="h-8 text-xs px-2.5 sm:h-9 sm:text-sm sm:px-3">
+                        <Eye className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                        View
                       </Button>
+                    </Link>
+                    {(o.status === "pending" || o.status === "confirmed") && (
+                      <>
+                        {o.status === "pending" && (
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(o.id)} className="h-8 text-xs px-2.5 sm:h-9 sm:text-sm sm:px-3">
+                            <Edit className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                            Edit
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive hover:text-destructive h-8 text-xs px-2.5 sm:h-9 sm:text-sm sm:px-3"
+                          onClick={() => handleCancel(o.id)}
+                        >
+                          <XCircle className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                          Cancel
+                        </Button>
+                      </>
+                    )}
+                    {o.status === "cancelled" && (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleCancel(o.id)}
+                        className="text-muted-foreground hover:text-destructive h-8 text-xs px-2.5 sm:h-9 sm:text-sm sm:px-3"
+                        onClick={() => handleDelete(o.id)}
                       >
-                        <XCircle className="mr-1 h-4 w-4" />
-                        Cancel
+                        <Trash2 className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                        Delete
                       </Button>
-                    </>
-                  )}
-                  {o.status === "cancelled" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(o.id)}
-                    >
-                      <Trash2 className="mr-1 h-4 w-4" />
-                      Delete
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -248,8 +248,8 @@ export function MedicationsTab() {
       )}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <CardTitle>All medications ({meds.length})</CardTitle>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <CardTitle className="text-lg sm:text-xl">All medications ({meds.length})</CardTitle>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <div className="flex items-center gap-1">
               <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               <Select value={sortField} onValueChange={setSortField}>
@@ -450,10 +450,10 @@ export function MedicationsTab() {
                         </span>
                       </div>
                       <div className="flex gap-2 pt-2">
-                        <Button size="sm" onClick={() => saveEdit(m.id)} disabled={saving}>
+                        <Button size="default" className="h-10" onClick={() => saveEdit(m.id)} disabled={saving}>
                           Save
                         </Button>
-                        <Button size="sm" variant="outline" onClick={cancelEdit}>
+                        <Button size="default" variant="outline" className="h-10" onClick={cancelEdit}>
                           Cancel
                         </Button>
                       </div>
@@ -464,7 +464,7 @@ export function MedicationsTab() {
                         <Pill className="h-4 w-4 text-primary/60" />
                         <span className="font-medium">{m.name}</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                         <div>
                           <span className="text-muted-foreground">Category:</span> {m.category}
                         </div>
@@ -486,12 +486,13 @@ export function MedicationsTab() {
                         </div>
                       </div>
                       <div className="flex gap-2 pt-1">
-                        <Button size="sm" variant="outline" onClick={() => startEdit(m)}>
+                        <Button size="default" variant="outline" className="h-10" onClick={() => startEdit(m)}>
                           Edit
                         </Button>
                         <Button
-                          size="sm"
+                          size="default"
                           variant="outline"
+                          className="h-10"
                           onClick={() => toggleActive(m.id, m.is_active)}
                         >
                           {m.is_active ? "Deactivate" : "Activate"}
@@ -604,21 +605,22 @@ export function MedicationsTab() {
                     <TableCell>
                       {editId === m.id ? (
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => saveEdit(m.id)} disabled={saving}>
+                          <Button size="default" className="h-10" onClick={() => saveEdit(m.id)} disabled={saving}>
                             Save
                           </Button>
-                          <Button size="sm" variant="outline" onClick={cancelEdit}>
+                          <Button size="default" variant="outline" className="h-10" onClick={cancelEdit}>
                             Cancel
                           </Button>
                         </div>
                       ) : (
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => startEdit(m)}>
+                          <Button size="default" variant="outline" className="h-10" onClick={() => startEdit(m)}>
                             Edit
                           </Button>
                           <Button
-                            size="sm"
+                            size="default"
                             variant="outline"
+                            className="h-10"
                             onClick={() => toggleActive(m.id, m.is_active)}
                           >
                             {m.is_active ? "Deactivate" : "Activate"}

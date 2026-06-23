@@ -112,7 +112,7 @@ export function OrdersTab() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Showing</p>
@@ -137,9 +137,9 @@ export function OrdersTab() {
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle>Order management</CardTitle>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="flex items-center gap-1">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1 flex-wrap">
+              <ArrowUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
               <Select value={sortField} onValueChange={setSortField}>
                 <SelectTrigger className="w-[110px]">
                   <SelectValue />
@@ -155,7 +155,7 @@ export function OrdersTab() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0"
+                className="h-9 w-9 p-0 shrink-0"
                 onClick={() => setSortAsc(!sortAsc)}
                 title={sortAsc ? "Ascending" : "Descending"}
               >
@@ -333,7 +333,8 @@ export function OrdersTab() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              size="sm"
+              size="default"
+              className="h-10"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
@@ -341,7 +342,8 @@ export function OrdersTab() {
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              size="default"
+              className="h-10"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
             >

@@ -80,8 +80,8 @@ function RegisterPage() {
 
   if (view === "check_email") {
     return (
-      <div className="container mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-10">
-        <Card className="w-full border-primary/20">
+      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <Card className="w-full border-primary/20 rounded-2xl">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
@@ -89,11 +89,11 @@ function RegisterPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground break-words hyphens-auto">
               We sent a confirmation link to{" "}
               <strong className="text-foreground">{form.email}</strong>.
             </p>
-            <div className="rounded-lg bg-muted p-4 text-sm">
+            <div className="rounded-lg bg-muted p-4 text-sm break-words hyphens-auto">
               <p className="font-medium">Next steps:</p>
               <ol className="mt-2 list-inside list-decimal space-y-1 text-muted-foreground">
                 <li>Open the email from Mohamad's MediCore Pharmacy GmbH online</li>
@@ -101,7 +101,7 @@ function RegisterPage() {
                 <li>Sign in with your new account</li>
               </ol>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground break-words hyphens-auto">
               Didn't receive the email? Check your spam folder or verify you entered the correct
               address. You can also{" "}
               <Link to="/login" className="text-primary underline underline-offset-2">
@@ -111,7 +111,7 @@ function RegisterPage() {
             </p>
             <div className="flex gap-3">
               <Link to="/login" className="flex-1">
-                <Button variant="outline" className="w-full gap-2">
+                <Button variant="outline" className="w-full sm:w-auto gap-2">
                   Go to sign in <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -123,12 +123,12 @@ function RegisterPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-md px-4 py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create your account</CardTitle>
+    <div className="mx-auto w-full max-w-md px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <Card className="min-w-0 rounded-2xl">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Create your account</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
@@ -182,7 +182,7 @@ function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 grid place-items-center w-9 h-9 text-muted-foreground hover:text-foreground"
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -235,11 +235,11 @@ function RegisterPage() {
                 </ul>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading || !allPassed}>
+            <Button type="submit" className="w-full sm:w-auto" disabled={loading || !allPassed}>
               {loading ? "Creating…" : "Create account"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-4 text-center text-sm text-muted-foreground break-words hyphens-auto">
             Already have an account?{" "}
             <Link to="/login" className="text-primary hover:underline">
               Sign in

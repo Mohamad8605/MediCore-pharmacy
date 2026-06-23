@@ -77,7 +77,7 @@ function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-bold">Shopping cart ({count()})</h1>
       {needsPrescription() && (
         <Alert className="mt-4">
@@ -87,14 +87,14 @@ function CartPage() {
           </AlertDescription>
         </Alert>
       )}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="space-y-3 sm:space-y-4 lg:col-span-2">
           {items.map((it) => (
             <Card key={it.medication.id}>
-              <CardContent className="flex flex-wrap items-center gap-4 p-4">
-                <div className="flex-1 min-w-0 sm:min-w-[200px]">
-                  <h3 className="font-semibold">{it.medication.name}</h3>
-                  <p className="text-sm text-muted-foreground">{fp(it.medication.price)} each</p>
+              <CardContent className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm sm:text-base font-semibold break-words hyphens-auto leading-snug">{it.medication.name}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{fp(it.medication.price)} each</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
@@ -103,14 +103,15 @@ function CartPage() {
                     onClick={() => handleDecrease(it.medication.id)}
                     disabled={it.quantity <= 1}
                     aria-label="Decrease quantity"
+                    className="h-8 w-8 sm:h-9 sm:w-9"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Button>
                   <Input
                     type="number"
                     value={it.quantity}
                     onChange={(e) => setQuantity(it.medication.id, parseInt(e.target.value) || 1)}
-                    className="w-20 text-center"
+                    className="w-16 sm:w-20 text-center h-8 sm:h-9 text-sm"
                   />
                   <Button
                     size="icon"
@@ -118,18 +119,19 @@ function CartPage() {
                     onClick={() => handleIncrease(it.medication.id)}
                     disabled={it.quantity >= it.medication.stock}
                     aria-label="Increase quantity"
+                    className="h-8 w-8 sm:h-9 sm:w-9"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-primary">
+                <div className="flex items-center justify-between sm:text-right sm:flex-col sm:items-end">
+                  <p className="text-sm sm:text-base font-semibold text-primary">
                     {fp(it.medication.price * it.quantity)}
                   </p>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="mt-1 text-destructive"
+                    className="h-8 text-xs text-destructive sm:h-auto sm:text-sm"
                     onClick={() => handleRemove(it.medication.id)}
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
@@ -158,14 +160,14 @@ function CartPage() {
               <span className="text-xl font-bold text-primary">{fp(total())}</span>
             </div>
             <Button
-              className="w-full"
+              className="w-full sm:w-auto"
               size="lg"
               onClick={() => navigate({ to: user ? "/checkout" : "/login" })}
             >
               Checkout <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Link to="/medications">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full sm:w-auto">
                 Continue shopping
               </Button>
             </Link>

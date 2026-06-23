@@ -30,7 +30,7 @@ export function AnnouncementBanner() {
 
   return (
     <div className={`${colors} relative border-b px-4 py-2.5 text-center text-sm`}>
-      <span>{banner.message}</span>
+      <span className="block pr-6 break-words">{banner.message}</span>
       <button
         onClick={() => setDismissed(true)}
         className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 hover:opacity-70"

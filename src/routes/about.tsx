@@ -41,12 +41,12 @@ function AboutPage() {
     },
   ];
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-16">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight break-words">
           About Mohamad's MediCore Pharmacy GmbH online
         </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
+        <p className="mt-4 text-sm sm:text-base leading-relaxed text-muted-foreground break-words hyphens-auto">
           Mohamad's MediCore Pharmacy GmbH online was built to bridge the gap between trusted local
           pharmacy care and modern, on-demand digital services. We help patients order their
           medication, upload prescriptions and track every step of the fulfilment process — all from
@@ -54,7 +54,7 @@ function AboutPage() {
         </p>
       </div>
 
-      <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {values.map((v) => (
           <Card key={v.title} className="border-border/60">
             <CardContent className="p-6">
@@ -62,16 +62,16 @@ function AboutPage() {
                 <v.icon className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-semibold">{v.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{v.desc}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words hyphens-auto">{v.desc}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="mt-16 grid gap-8 rounded-2xl bg-secondary/40 p-10 md:grid-cols-2 md:items-center">
+      <div className="mt-16 grid grid-cols-1 gap-8 rounded-2xl bg-secondary/40 p-6 sm:p-10 md:grid-cols-2 md:items-center">
         <div>
-          <h2 className="text-2xl font-bold">Our mission</h2>
-          <p className="mt-3 text-muted-foreground">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Our mission</h2>
+          <p className="mt-3 text-sm sm:text-base leading-relaxed text-muted-foreground break-words hyphens-auto">
             Make safe, regulated medication accessible to everyone — without the queue. We pair a
             friendly digital experience with the clinical oversight of registered pharmacists, so
             patients always get the right product at the right time.
@@ -80,17 +80,17 @@ function AboutPage() {
             <Button>Browse medications</Button>
           </Link>
         </div>
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-3xl font-bold text-primary">12+</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary break-words">12+</p>
             <p className="text-xs text-muted-foreground">Medication categories</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-primary">100%</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary break-words">100%</p>
             <p className="text-xs text-muted-foreground">Pharmacist reviewed</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-primary">24/7</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary break-words">24/7</p>
             <p className="text-xs text-muted-foreground">Online ordering</p>
           </div>
         </div>

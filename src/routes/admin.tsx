@@ -28,8 +28,8 @@ function AdminPage() {
   if (authLoading || !user) {
     if (authLoading) {
       return (
-        <div className="container mx-auto px-4 py-8">
-          <Skeleton className="h-8 w-64" />
+        <div className="container mx-auto px-4 py-6 sm:py-8">
+          <Skeleton className="h-8 w-48 sm:w-64" />
           <div className="mt-6 space-y-4">
             <div className="flex gap-2">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -46,31 +46,31 @@ function AdminPage() {
   if (!isStaff) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">{isAdmin ? "Admin" : "Pharmacist"} dashboard</h1>
-      <p className="mt-1 text-muted-foreground">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold break-words">{isAdmin ? "Admin" : "Pharmacist"} dashboard</h1>
+      <p className="mt-1 text-sm sm:text-base text-muted-foreground">
         {isAdmin
           ? "Manage orders, medications, contact messages and user roles."
           : "Manage orders, medications and contact messages."}
       </p>
 
-      <Tabs defaultValue="orders" className="mt-6">
-        <TabsList className="overflow-x-auto flex-nowrap">
-          <TabsTrigger value="orders" className="gap-2">
-            <LayoutDashboard className="h-4 w-4" /> Orders
+      <Tabs defaultValue="orders" className="mt-4 sm:mt-6">
+        <TabsList className="w-full overflow-x-auto flex-nowrap justify-start sm:justify-start">
+          <TabsTrigger value="orders" className="gap-1 sm:gap-2 px-2 sm:px-4">
+            <LayoutDashboard className="h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Orders</span>
           </TabsTrigger>
-          <TabsTrigger value="contact" className="gap-2">
-            <Mail className="h-4 w-4" /> Contact
+          <TabsTrigger value="contact" className="gap-1 sm:gap-2 px-2 sm:px-4">
+            <Mail className="h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Contact</span>
           </TabsTrigger>
-          <TabsTrigger value="medications" className="gap-2">
-            <Pill className="h-4 w-4" /> Medications
+          <TabsTrigger value="medications" className="gap-1 sm:gap-2 px-2 sm:px-4">
+            <Pill className="h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Medications</span>
           </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-2">
-            <Settings className="h-4 w-4" /> Settings
+          <TabsTrigger value="settings" className="gap-1 sm:gap-2 px-2 sm:px-4">
+            <Settings className="h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Settings</span>
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" /> Users
+            <TabsTrigger value="users" className="gap-1 sm:gap-2 px-2 sm:px-4">
+              <Users className="h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
           )}
         </TabsList>

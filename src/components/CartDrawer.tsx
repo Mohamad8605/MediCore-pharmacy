@@ -84,17 +84,22 @@ export function CartDrawer() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Open cart">
-          <ShoppingCart className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative w-9 h-9"
+          aria-label="Open cart"
+        >
+          <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
           {mounted && count > 0 && (
-            <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full px-1 text-[10px]">
-              {count}
+            <Badge className="absolute -right-1.5 -top-1.5 h-5 min-w-5 rounded-full px-1 text-[10px] leading-none">
+              {count > 99 ? "99+" : count}
             </Badge>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-        <SheetHeader className="border-b p-6">
+      <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md max-w-full">
+        <SheetHeader className="border-b p-4 sm:p-6">
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-primary" />
             Your cart
@@ -106,11 +111,11 @@ export function CartDrawer() {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {items.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">Your cart is empty.</p>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <CartGroup
                 label="Prescription"
                 icon={<ShieldAlert className="h-3.5 w-3.5" />}
@@ -136,25 +141,25 @@ export function CartDrawer() {
         </div>
 
         {items.length > 0 && (
-          <div className="border-t bg-muted/30 p-6">
+          <div className="border-t bg-muted/30 p-4 sm:p-6">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <Truck className="mr-1 inline h-3.5 w-3.5" />
               Delivery
             </p>
-            <p className="mb-4 text-xs text-muted-foreground">
+            <p className="mb-3 sm:mb-4 text-xs text-muted-foreground">
               {total >= SHIPPING_THRESHOLD
                 ? `Free delivery over €${SHIPPING_THRESHOLD}`
                 : `€${SHIPPING_FEE} delivery · Free over €${SHIPPING_THRESHOLD}`}
             </p>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-xs sm:text-sm">
               <Row label="Subtotal" value={fp(total)} />
               <Row label="Delivery" value={shipping === 0 ? "Free" : fp(shipping)} />
-              <Separator className="my-2" />
+              <Separator className="my-1.5 sm:my-2" />
               <Row label="Total (incl. VAT)" value={fp(total + shipping)} bold />
             </div>
 
             <Button
-              className="mt-4 w-full rounded-xl"
+              className="mt-3 sm:mt-4 w-full rounded-xl"
               onClick={() => {
                 setOpen(false);
                 navigate({ to: "/checkout" });
@@ -212,45 +217,45 @@ function CartGroup({
         {icon}
         {label}
       </Badge>
-      <ul className="space-y-3">
+      <ul className="space-y-2 sm:space-y-3">
         {items.map((i) => (
-          <li key={i.medication.id} className="rounded-2xl border bg-card p-3">
+          <li key={i.medication.id} className="rounded-2xl border bg-card p-2.5 sm:p-3">
             <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{i.medication.name}</p>
-                <p className="text-xs text-muted-foreground">
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-xs sm:text-sm font-medium leading-snug">{i.medication.name}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
                   {fp(i.medication.price)} · incl. VAT
                 </p>
               </div>
               <button
                 onClick={() => onRemove(i.medication.id)}
-                className="text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive shrink-0"
                 aria-label="Remove"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </div>
-            <div className="mt-2 flex items-center justify-between">
-              <div className="flex items-center gap-1 rounded-xl border bg-background">
+            <div className="mt-1.5 sm:mt-2 flex items-center justify-between gap-2">
+              <div className="flex items-center rounded-xl border bg-background">
                 <button
-                  className="p-1.5 disabled:opacity-30"
+                  className="p-1.5 sm:p-2 min-w-[32px] sm:min-w-[36px] flex items-center justify-center disabled:opacity-30"
                   onClick={() => onDecrease(i.medication.id)}
                   disabled={i.quantity <= 1}
                   aria-label="Decrease"
                 >
-                  <Minus className="h-3.5 w-3.5" />
+                  <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
-                <span className="w-6 text-center text-sm tabular-nums">{i.quantity}</span>
+                <span className="w-7 sm:w-8 text-center text-xs sm:text-sm tabular-nums">{i.quantity}</span>
                 <button
-                  className="p-1.5 disabled:opacity-30"
+                  className="p-1.5 sm:p-2 min-w-[32px] sm:min-w-[36px] flex items-center justify-center disabled:opacity-30"
                   onClick={() => onIncrease(i.medication.id)}
                   disabled={i.quantity >= i.medication.stock}
                   aria-label="Increase"
                 >
-                  <Plus className="h-3.5 w-3.5" />
+                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
               </div>
-              <p className="text-sm font-semibold">{fp(i.medication.price * i.quantity)}</p>
+              <p className="text-xs sm:text-sm font-semibold shrink-0">{fp(i.medication.price * i.quantity)}</p>
             </div>
           </li>
         ))}

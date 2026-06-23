@@ -71,16 +71,16 @@ function ProfilePage() {
 
   if (!user) return null;
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-bold">My profile</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold break-words hyphens-auto">My profile</h1>
+      <p className="mt-1 text-xs sm:text-sm text-muted-foreground break-words hyphens-auto">
         {user.email} · {roles.join(", ") || "patient"}
       </p>
-      <Card className="mt-6">
-        <CardHeader>
+      <Card className="mt-4 sm:mt-6 rounded-2xl">
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>Personal information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <form onSubmit={save} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -134,7 +134,7 @@ function ProfilePage() {
                 />
               </div>
             </div>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" className="w-full sm:w-auto" disabled={saving}>
               {saving ? "Saving…" : "Save changes"}
             </Button>
           </form>

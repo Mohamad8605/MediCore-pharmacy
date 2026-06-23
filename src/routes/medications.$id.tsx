@@ -48,9 +48,9 @@ function MedicationDetailPage() {
 
   if (loading)
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col gap-8 md:flex-row">
-          <Skeleton className="h-80 w-full max-w-md rounded-2xl" />
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="flex flex-col gap-6 sm:gap-8 md:flex-row">
+          <Skeleton className="w-full aspect-[4/3] sm:aspect-[1/1] max-w-md rounded-2xl" />
           <div className="flex-1 space-y-4">
             <Skeleton className="h-6 w-24" />
             <Skeleton className="h-10 w-3/4" />
@@ -64,13 +64,13 @@ function MedicationDetailPage() {
 
   if (error || !med)
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Button variant="outline" onClick={() => navigate({ to: "/medications" })}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to medications
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <Button variant="outline" className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm" onClick={() => navigate({ to: "/medications" })}>
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Back to medications
         </Button>
-        <div className="mt-12 text-center">
-          <p className="text-lg font-medium text-destructive">{error || "Medication not found"}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
+        <div className="mt-10 sm:mt-12 text-center">
+          <p className="text-base sm:text-lg font-medium text-destructive">{error || "Medication not found"}</p>
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
             The medication you are looking for does not exist or could not be loaded.
           </p>
         </div>
@@ -78,12 +78,12 @@ function MedicationDetailPage() {
     );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Button variant="outline" onClick={() => navigate({ to: "/medications" })}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      <Button variant="outline" className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm" onClick={() => navigate({ to: "/medications" })}>
+        <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Back
       </Button>
-      <div className="mt-6 grid gap-8 md:grid-cols-2">
-        <div className="flex h-48 sm:h-64 md:h-80 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10">
+      <div className="mt-4 sm:mt-6 grid gap-6 sm:gap-8 lg:grid-cols-2">
+        <div className="flex w-full aspect-[4/3] sm:aspect-[1/1] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10">
           {med.image_url && !imageFailed ? (
             <img
               src={med.image_url}
@@ -92,17 +92,17 @@ function MedicationDetailPage() {
               onError={() => setImageFailed(true)}
             />
           ) : (
-            <Pill className="h-32 w-32 text-primary/40" />
+            <Pill className="h-24 w-24 sm:h-32 sm:w-32 text-primary/40" />
           )}
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">{med.category}</Badge>
             {med.requires_prescription && <Badge>Prescription required</Badge>}
           </div>
-          <h1 className="mt-3 text-3xl font-bold">{med.name}</h1>
-          <p className="mt-2 text-muted-foreground">{med.description}</p>
-          <p className="mt-4 text-3xl font-bold text-primary">{fp(Number(med.price))}</p>
+          <h1 className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-bold break-words hyphens-auto">{med.name}</h1>
+          <p className="mt-2 text-xs sm:text-base text-muted-foreground">{med.description}</p>
+          <p className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-bold text-primary">{fp(Number(med.price))}</p>
           <Card className="mt-6">
             <CardContent className="space-y-2 p-4 text-sm">
               {med.active_ingredient && (
@@ -178,6 +178,7 @@ function MedicationDetailPage() {
             />
             <Button
               size="lg"
+              className="w-full sm:w-auto"
               disabled={(stockMap[med.id] ?? med.stock) === 0}
               onClick={() => addToCartWithCheck(med, qty)}
             >
