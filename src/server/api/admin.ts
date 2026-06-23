@@ -283,14 +283,12 @@ export const deleteUser = createServerFn({ method: "POST" }).handler(async (ctx)
   await requireAdminRole();
   const { userId } = ctx.data as unknown as { userId: string };
 
+  const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
   await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
   await supabaseAdmin.from("profiles").delete().eq("id", userId);
 
-  try {
-    await supabaseAdmin.auth.admin.deleteUser(userId);
-  } catch {
-    // Auth record may not exist — DB data is already cleaned up
-  }
+  if (authError && !authError.message?.includes("not found")) throw authError;
 });
 
 export const getAllSettings = createServerFn({ method: "GET" }).handler(async () => {

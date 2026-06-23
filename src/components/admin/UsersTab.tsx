@@ -259,6 +259,7 @@ export function UsersTab() {
           {sorted.map((u) => {
             const availableRoles = ROLES.filter((r) => !u.roles.includes(r));
             const isSelf = u.id === currentUser?.id;
+            const isDemoUser = u.id.startsWith("demo-");
             return (
               <div key={u.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div className="min-w-0 flex-1">
@@ -283,28 +284,30 @@ export function UsersTab() {
                         >
                           <Icon className="h-3 w-3" />
                           {role}
-                          <button
-                            onClick={() =>
-                              role === "patient"
-                                ? setDeleteTarget(u)
-                                : removeRole(u.id, role)
-                            }
-                            disabled={
-                              (assigning?.userId === u.id && assigning?.role === role) ||
-                              (role === "patient" && false) ||
-                              (role === "admin" && isSelf)
-                            }
-                            className="ml-1 text-muted-foreground hover:text-destructive disabled:opacity-30"
-                            title={
-                              role === "patient"
-                                ? "Delete user"
-                                : role === "admin" && isSelf
-                                  ? "Cannot remove your own admin role"
-                                  : "Remove role"
-                            }
-                          >
-                            ×
-                          </button>
+                          {!(role === "patient" && isDemoUser) && (
+                            <button
+                              onClick={() =>
+                                role === "patient"
+                                  ? setDeleteTarget(u)
+                                  : removeRole(u.id, role)
+                              }
+                              disabled={
+                                (assigning?.userId === u.id && assigning?.role === role) ||
+                                (role === "patient" && false) ||
+                                (role === "admin" && isSelf)
+                              }
+                              className="ml-1 text-muted-foreground hover:text-destructive disabled:opacity-30"
+                              title={
+                                role === "patient"
+                                  ? "Delete user"
+                                  : role === "admin" && isSelf
+                                    ? "Cannot remove your own admin role"
+                                    : "Remove role"
+                              }
+                            >
+                              ×
+                            </button>
+                          )}
                         </Badge>
                       );
                     })}
@@ -333,7 +336,7 @@ export function UsersTab() {
                       )}
                     </SelectContent>
                   </Select>
-                  {!isSelf && (
+                  {!isSelf && !isDemoUser && (
                     <Button
                       size="icon"
                       variant="ghost"
