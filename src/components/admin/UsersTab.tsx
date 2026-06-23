@@ -234,18 +234,20 @@ export function UsersTab() {
                           <Icon className="h-3 w-3" />
                           {role}
                           <button
-                            onClick={() => removeRole(u.id, role)}
+                            onClick={() =>
+                              role === "patient"
+                                ? setDeleteTarget(u)
+                                : removeRole(u.id, role)
+                            }
                             disabled={
                               (assigning?.userId === u.id && assigning?.role === role) ||
-                              (role === "patient" &&
-                                u.roles.filter((r: string) => r === "patient").length <= 1) ||
+                              (role === "patient" && false) ||
                               (role === "admin" && isSelf)
                             }
                             className="ml-1 text-muted-foreground hover:text-destructive disabled:opacity-30"
                             title={
-                              role === "patient" &&
-                              u.roles.filter((r: string) => r === "patient").length <= 1
-                                ? "Cannot remove last patient role"
+                              role === "patient"
+                                ? "Delete user"
                                 : role === "admin" && isSelf
                                   ? "Cannot remove your own admin role"
                                   : "Remove role"
