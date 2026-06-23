@@ -20,21 +20,21 @@ type LoginView = "form" | "email_not_confirmed" | "rate_limited" | "suspended";
 
 const DEMO_USERS = [
   {
-    label: "Admin",
+    label: "Admin – Sarah Müller",
     email: "admin@medicore.com",
     pw: "Admin123!",
     role: "admin",
     color: "bg-red-100 hover:bg-red-200 text-red-800 border-red-300",
   },
   {
-    label: "Patient",
+    label: "Patient – Anna Svensson",
     email: "patient@medicore.com",
     pw: "Patient123!",
     role: "patient",
     color: "bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300",
   },
   {
-    label: "Pharmacist",
+    label: "Pharmacist – Erik Johansson",
     email: "pharmacist@medicore.com",
     pw: "Pharmacist123!",
     role: "pharmacist",

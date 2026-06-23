@@ -15,8 +15,8 @@ export const DEMO_USERS: DemoUser[] = [
     id: "demo-admin-0000-0000-0000-000000000001",
     email: "admin@medicore.com",
     password: "Admin123!",
-    first_name: "Admin",
-    last_name: "User",
+    first_name: "Sarah",
+    last_name: "Müller",
     roles: ["admin"],
   },
   {
