@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, ShieldAlert, User, Plus, Trash2 } from "lucide-react";
+import { Shield, ShieldAlert, User, Plus, Trash2, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { getAllUsers, updateUserRole, createUser, deleteUser } from "@/lib/user-admin-service";
 import { useAuth } from "@/lib/auth";
@@ -55,6 +55,27 @@ export function UsersTab() {
   const [addRoleValue, setAddRoleValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
+  const [sortField, setSortField] = useState("name");
+  const [sortAsc, setSortAsc] = useState(true);
+
+  const sorted = [...users].sort((a, b) => {
+    let cmp = 0;
+    switch (sortField) {
+      case "name": {
+        const an = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || "unnamed user";
+        const bn = `${b.first_name ?? ""} ${b.last_name ?? ""}`.trim() || "unnamed user";
+        cmp = an.localeCompare(bn);
+        break;
+      }
+      case "role": {
+        const ar = a.roles[0] ?? "";
+        const br = b.roles[0] ?? "";
+        cmp = ar.localeCompare(br);
+        break;
+      }
+    }
+    return sortAsc ? cmp : -cmp;
+  });
 
   async function load() {
     setLoading(true);
@@ -162,7 +183,29 @@ export function UsersTab() {
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle>User roles ({users.length})</CardTitle>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortField} onValueChange={setSortField}>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="role">Role</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => setSortAsc(!sortAsc)}
+                title={sortAsc ? "Ascending" : "Descending"}
+              >
+                {sortAsc ? "↑" : "↓"}
+              </Button>
+            </div>
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-1 h-4 w-4" /> Add user
@@ -212,7 +255,7 @@ export function UsersTab() {
           </Dialog>
         </CardHeader>
         <CardContent className="space-y-3">
-          {users.map((u) => {
+          {sorted.map((u) => {
             const availableRoles = ROLES.filter((r) => !u.roles.includes(r));
             const isSelf = u.id === currentUser?.id;
             return (
@@ -304,7 +347,7 @@ export function UsersTab() {
               </div>
             );
           })}
-          {users.length === 0 && (
+          {sorted.length === 0 && (
             <p className="text-center text-muted-foreground py-8">No users found.</p>
           )}
         </CardContent>

@@ -10,7 +10,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Mail, ChevronDown, ChevronUp } from "lucide-react";
+import { Mail, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { getContactMessages, type ContactMessage } from "@/lib/contact-service";
 
@@ -18,6 +26,8 @@ export function ContactTab() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [sortField, setSortField] = useState("created_at");
+  const [sortAsc, setSortAsc] = useState(false);
 
   useEffect(() => {
     getContactMessages()
@@ -34,6 +44,25 @@ export function ContactTab() {
       return next;
     });
   }
+
+  const sorted = [...messages].sort((a, b) => {
+    let cmp = 0;
+    switch (sortField) {
+      case "created_at":
+        cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        break;
+      case "subject":
+        cmp = a.subject.localeCompare(b.subject);
+        break;
+      case "name":
+        cmp = a.name.localeCompare(b.name);
+        break;
+      case "email":
+        cmp = a.email.localeCompare(b.email);
+        break;
+    }
+    return sortAsc ? cmp : -cmp;
+  });
 
   if (loading) {
     return (
@@ -52,18 +81,41 @@ export function ContactTab() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
           Contact messages
         </CardTitle>
+        <div className="flex items-center gap-1">
+          <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+          <Select value={sortField} onValueChange={setSortField}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Date</SelectItem>
+              <SelectItem value="subject">Subject</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="email">Email</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 p-0"
+            onClick={() => setSortAsc(!sortAsc)}
+            title={sortAsc ? "Ascending" : "Descending"}
+          >
+            {sortAsc ? "↑" : "↓"}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        {messages.length === 0 ? (
+        {sorted.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No messages yet.</p>
         ) : (
           <div className="divide-y">
-            {messages.map((m) => (
+            {sorted.map((m) => (
               <div key={m.id}>
                 <button
                   onClick={() => toggle(m.id)}

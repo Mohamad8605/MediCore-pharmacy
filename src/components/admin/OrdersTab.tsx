@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { loadOrders, updateOrderStatus } from "@/lib/admin-service";
@@ -49,6 +49,8 @@ export function OrdersTab() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sortField, setSortField] = useState("created_at");
+  const [sortAsc, setSortAsc] = useState(false);
   const fp = useFormatPrice();
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -73,6 +75,31 @@ export function OrdersTab() {
     setPage(1);
   }, [filter]);
 
+  const sorted = [...orders].sort((a, b) => {
+    let cmp = 0;
+    switch (sortField) {
+      case "created_at":
+        cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        break;
+      case "total_price":
+        cmp = Number(a.total_price) - Number(b.total_price);
+        break;
+      case "status":
+        cmp = a.status.localeCompare(b.status);
+        break;
+      case "customer": {
+        const an = `${a.profile?.first_name ?? ""} ${a.profile?.last_name ?? ""}`.trim();
+        const bn = `${b.profile?.first_name ?? ""} ${b.profile?.last_name ?? ""}`.trim();
+        cmp = an.localeCompare(bn);
+        break;
+      }
+      case "items":
+        cmp = a.order_items.length - b.order_items.length;
+        break;
+    }
+    return sortAsc ? cmp : -cmp;
+  });
+
   async function updateStatus(id: string, status: (typeof STATUSES)[number]) {
     try {
       await updateOrderStatus(id, status);
@@ -89,7 +116,7 @@ export function OrdersTab() {
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Showing</p>
-            <p className="text-2xl font-bold">{orders.length}</p>
+            <p className="text-2xl font-bold">{sorted.length}</p>
           </CardContent>
         </Card>
         <Card>
@@ -102,7 +129,7 @@ export function OrdersTab() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Revenue</p>
             <p className="text-2xl font-bold">
-              {fp(orders.reduce((s, o) => s + Number(o.total_price), 0))}
+              {fp(sorted.reduce((s, o) => s + Number(o.total_price), 0))}
             </p>
           </CardContent>
         </Card>
@@ -110,22 +137,48 @@ export function OrdersTab() {
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle>Order management</CardTitle>
-          <Select
-            value={filter}
-            onValueChange={(v) => setFilter(v as "all" | (typeof STATUSES)[number])}
-          >
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s.replace("_", " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortField} onValueChange={setSortField}>
+                <SelectTrigger className="w-[110px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_at">Date</SelectItem>
+                  <SelectItem value="total_price">Total</SelectItem>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="items">Items</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => setSortAsc(!sortAsc)}
+                title={sortAsc ? "Ascending" : "Descending"}
+              >
+                {sortAsc ? "↑" : "↓"}
+              </Button>
+            </div>
+            <Select
+              value={filter}
+              onValueChange={(v) => setFilter(v as "all" | (typeof STATUSES)[number])}
+            >
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s.replace("_", " ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -166,7 +219,7 @@ export function OrdersTab() {
           ) : (
             <>
               <div className="block md:hidden space-y-3">
-                {orders.map((o) => (
+                {sorted.map((o) => (
                   <div key={o.id} className="rounded-lg border p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs">#{o.id.slice(0, 8)}</span>
@@ -203,7 +256,7 @@ export function OrdersTab() {
                     </Select>
                   </div>
                 ))}
-                {orders.length === 0 && (
+                {sorted.length === 0 && (
                   <p className="text-center text-muted-foreground">No orders</p>
                 )}
               </div>
@@ -221,7 +274,7 @@ export function OrdersTab() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((o) => (
+                    {sorted.map((o) => (
                       <TableRow key={o.id}>
                         <TableCell className="font-mono text-xs">#{o.id.slice(0, 8)}</TableCell>
                         <TableCell>
@@ -258,7 +311,7 @@ export function OrdersTab() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {orders.length === 0 && (
+                    {sorted.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center text-muted-foreground">
                           No orders

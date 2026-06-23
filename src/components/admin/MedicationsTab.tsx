@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pill, Search, RefreshCw, AlertTriangle } from "lucide-react";
+import { Plus, Pill, Search, RefreshCw, AlertTriangle, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { useFormatPrice } from "@/hooks/use-format-price";
 import { useStockSync } from "@/lib/use-stock-sync";
@@ -33,6 +33,13 @@ import {
   getAllSettings,
 } from "@/lib/admin-service";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type MedicationRow = {
   id: string;
@@ -89,6 +96,8 @@ export function MedicationsTab() {
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState<MedicationForm>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [sortField, setSortField] = useState("name");
+  const [sortAsc, setSortAsc] = useState(true);
   const fp = useFormatPrice();
   const ids = meds.map((m) => m.id);
   const stockMap = useStockSync(ids);
@@ -116,6 +125,31 @@ export function MedicationsTab() {
   const filtered = query
     ? meds.filter((m) => m.name.toLowerCase().includes(query.toLowerCase()))
     : meds;
+
+  const sorted = [...filtered].sort((a, b) => {
+    let cmp = 0;
+    switch (sortField) {
+      case "name":
+        cmp = a.name.localeCompare(b.name);
+        break;
+      case "category":
+        cmp = a.category.localeCompare(b.category);
+        break;
+      case "price":
+        cmp = Number(a.price) - Number(b.price);
+        break;
+      case "stock":
+        cmp = a.stock - b.stock;
+        break;
+      case "status":
+        cmp = Number(a.is_active) - Number(b.is_active);
+        break;
+      case "created_at":
+        cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        break;
+    }
+    return sortAsc ? cmp : -cmp;
+  });
 
   function startEdit(m: MedicationRow) {
     setEditId(m.id);
@@ -194,7 +228,7 @@ export function MedicationsTab() {
     );
   }
 
-  const lowStockCount = filtered.filter(
+  const lowStockCount = sorted.filter(
     (m) => (stockMap[m.id] ?? m.stock) <= lowStockThreshold,
   ).length;
 
@@ -216,6 +250,31 @@ export function MedicationsTab() {
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle>All medications ({meds.length})</CardTitle>
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-1">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortField} onValueChange={setSortField}>
+                <SelectTrigger className="w-[110px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                  <SelectItem value="stock">Stock</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="created_at">Date</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => setSortAsc(!sortAsc)}
+                title={sortAsc ? "Ascending" : "Descending"}
+              >
+                {sortAsc ? "↑" : "↓"}
+              </Button>
+            </div>
             <div className="relative flex-1 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -337,7 +396,7 @@ export function MedicationsTab() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="block md:hidden space-y-3 p-4">
-            {filtered.map((m) => (
+            {sorted.map((m) => (
               <Card key={m.id} className={!m.is_active ? "opacity-60" : ""}>
                 <CardContent className="p-4 space-y-3">
                   {editId === m.id ? (
@@ -461,7 +520,7 @@ export function MedicationsTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((m) => (
+                {sorted.map((m) => (
                   <TableRow key={m.id} className={!m.is_active ? "opacity-60" : ""}>
                     <TableCell>
                       {editId === m.id ? (
@@ -569,7 +628,7 @@ export function MedicationsTab() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {filtered.length === 0 && (
+                {sorted.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground">
                       No medications found.
