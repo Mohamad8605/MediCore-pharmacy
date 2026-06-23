@@ -234,6 +234,37 @@ export const updateUserRole = createServerFn({ method: "POST" }).handler(async (
   }
 });
 
+export const createUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  await requireAdminRole();
+  const { email, password, role } = ctx.data as unknown as {
+    email: string;
+    password: string;
+    role: string;
+  };
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  if (error) throw error;
+  if (role) {
+    const { error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.user.id, role: role as "admin" | "pharmacist" | "patient" });
+    if (roleError) throw roleError;
+  }
+  return data.user;
+});
+
+export const deleteUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  await requireAdminRole();
+  const { userId } = ctx.data as unknown as { userId: string };
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+  if (error) throw error;
+  await supabaseAdmin.from("profiles").delete().eq("id", userId);
+  await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
+});
+
 export const getAllSettings = createServerFn({ method: "GET" }).handler(async () => {
   await requireStaffRole();
   const { data, error } = await supabaseAdmin.from("app_settings").select("*");

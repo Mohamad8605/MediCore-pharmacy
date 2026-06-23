@@ -106,6 +106,7 @@ export function MedicationsTab() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load medications");
     }
+    setLoading(false);
   }
 
   useEffect(() => {
